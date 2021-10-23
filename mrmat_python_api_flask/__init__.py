@@ -25,7 +25,7 @@
 
 import sys
 import os
-import pkg_resources
+import importlib.metadata
 from logging.config import dictConfig
 
 from flask import Flask
@@ -34,7 +34,7 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
 
-__version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
+__version__ = importlib.metadata.version('mrmat-python-api-flask')
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
