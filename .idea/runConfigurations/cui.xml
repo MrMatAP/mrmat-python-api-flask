@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cli" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="cui" type="PythonConfigurationType" factoryName="Python" singleton="false">
     <module name="mrmat-python-api-flask" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -7,13 +7,13 @@
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="HTTPLIB2_CA_CERTS" value="$USER_HOME$/var/ca/mrmat-ca/ca.crt" />
     </envs>
-    <option name="SDK_HOME" value="/opt/dyn/python/mrmat-python-api-flask/bin/python" />
+    <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-    <option name="SCRIPT_NAME" value="mrmat_python_api_flask.cli" />
+    <option name="SCRIPT_NAME" value="mrmat_python_api_flask.cui" />
     <option name="PARAMETERS" value="--instance-path $USER_HOME$/build/api-flask --port 5000 --oidc-secrets $USER_HOME$/etc/mrmat-python-api-flask.json -d" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
