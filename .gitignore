@@ -245,3 +245,6 @@ dmypy.json
 .prof
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains,python
+
+var/terraform/.terraform/
+var/terraform/.terraform.lock.hcl
