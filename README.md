@@ -14,13 +14,29 @@ This variant of a Python Flask API is code-first and using native Flask
 * API body serialisation using Flask-Marshmallow
 * OIDC Authentication using Flask-OIDC
 * No TLS, because this is intended to run behind a reverse proxy
-* Healthz
+* Healthz API
 
 ## How to build this
 
-Use the standard `python ./setup.py install` to build. By default, the version built will be `0.0.0.dev0`,
-unless the `MRMAT_VERSION` environment variable is set by the build orchestrator (e.g. GitHub Actions). The
-version and whether a release is built is consequently controlled exlusively by the build orchestrator.
+In bash:
+
+```shell
+$ pip install -r build-requirements.txt  # Manually install dependencies (see note in requirements.txt!)
+$ export PYTHONPATH=`pwd`                # In order to find the build-time ci module
+$ export MRMAT_VERSION=1.0.27            # Optional: To influence the version. Normally calculated and set by CI
+$ python -m build -n                     # Use -n in an interactive, virtual environment
+$ ls dist/
+mrmat_python_api_flask-1.0.27.dev0-py3-none-any.whl
+```
+
+In PowerShell:
+
+```powershell
+PS> pip install -r build-requirements.txt     # Manually install dependencies (see note in requirements.txt!)
+PS> $Env:PYTHONPATH=(pwd)                     # In order to find the build-time ci module
+PS> $Env:MRMAT_VERSION = "1.0.27"             # Optional: To influence the version. Normally calculated and set by CI
+PS> python -m build
+```
 
 ## How to run this
 
@@ -35,8 +51,6 @@ You have the choice of running this
 To run this directly:
 
 ```shell
-$ pip install -r requirements.txt
-$ python ./setup.py install
 $ mrmat-python-api-flask -h
 usage: mrmat-python-api-flask [-h] [-d] [--host HOST] [--port PORT] [--instance-path INSTANCE_PATH] [--db DB]
                               --oidc-secrets OIDC_SECRETS
