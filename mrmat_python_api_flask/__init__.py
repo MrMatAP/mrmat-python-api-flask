@@ -34,7 +34,12 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
 
-__version__ = importlib.metadata.version('mrmat-python-api-flask')
+try:
+    __version__ = importlib.metadata.version('mrmat-python-api-flask')
+except importlib.metadata.PackageNotFoundError:
+    # You have not explicitly installed the package just yet
+    __version__ = 'UNKNOWN'
+
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
