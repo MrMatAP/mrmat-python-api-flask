@@ -25,7 +25,7 @@
 
 import sys
 import os
-import pkg_resources
+import importlib.metadata
 from logging.config import dictConfig
 
 from flask import Flask, render_template
@@ -35,7 +35,12 @@ from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
 from flask_smorest import Api
 
-__version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
+try:
+    __version__ = importlib.metadata.version('mrmat-python-api-flask')
+except importlib.metadata.PackageNotFoundError:
+    # You have not yet installed this as a package. Likely because you are still hacking on it
+    __version__ = '0.0.0.dev0'
+
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
