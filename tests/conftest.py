@@ -23,6 +23,10 @@
 import os
 import logging
 import json
+
+import psycopg2
+import psycopg2.sql
+import psycopg2.extensions
 import pytest
 
 from typing import Optional, List, Dict
@@ -30,8 +34,9 @@ from typing import Optional, List, Dict
 import jwt
 import oauthlib.oauth2
 import requests_oauthlib
+from flask_migrate import upgrade
 
-from mrmat_python_api_flask import create_app, db
+from mrmat_python_api_flask import create_app, db, migrate
 
 LOGGER = logging.getLogger(__name__)
 
@@ -59,10 +64,7 @@ def test_config() -> Optional[Dict]:
     Returns:
         A dictionary of configuration or None if not configuration file is set
     """
-    if 'FLASK_CONFIG' not in os.environ:
-        LOGGER.info('Missing test configuration via FLASK_CONFIG environment variable. Tests are limited')
-        return None
-    config_file = os.path.expanduser(os.environ['FLASK_CONFIG'])
+    config_file = os.path.expanduser(os.getenv('FLASK_CONFIG'))
     if not os.path.exists(config_file):
         LOGGER.info('Configuration set via FLASK_CONFIG environment variable does not exist. Tests are limited')
         return None
@@ -148,3 +150,92 @@ def oidc_token_write(test_config) -> Optional[Dict]:
     token = oidc_token(test_config, ['mrmat-python-api-flask-resource-write'])
     token['jwt'] = jwt.decode(token['access_token'], options={"verify_signature": False})
     return token
+
+
+class TEDException(Exception):
+    skip: bool = False
+    msg: str = 'An unexpected exception occurred'
+
+    def __init__(self, msg: str, skip: Optional[bool] = False):
+        self.skip = skip
+        self.msg = msg
+
+
+class TED:
+    available: bool = False
+    config_file: str = None
+    config: dict = {}
+
+    _admin_conn: psycopg2.extensions.connection = None
+
+    def __init__(self):
+        if 'TED_CONFIG' not in os.environ:
+            raise TEDException(skip=True,
+                               msg='There is no TED_CONFIG environment variable to configure the environment')
+        self.config_file = os.path.expanduser(os.getenv('TED_CONFIG'))
+        if not os.path.exists(self.config_file):
+            raise TEDException(skip=True, msg='Configuration from TED_CONFIG environment variable is not readable or '
+                                              'does not exist')
+        with open(self.config_file) as C:
+            self.config = json.load(C)
+        if 'db' in self.config:
+            self.admin_dsn = self.config['db']['admin_dsn']
+            self.user_dsn = self.config['db']['user_dsn']
+            self.assert_db()
+
+    def teardown(self):
+        if self._admin_conn is not None:
+            self._admin_conn.close()
+
+    def assert_db(self):
+        user_dsn_info: psycopg2.extensions.ConnectionInfo = psycopg2.extensions.parse_dsn(self.user_dsn)
+        role = user_dsn_info['user']
+        password = user_dsn_info['password']
+        schema = self.config['db']['user_force_schema'] if 'user_force_schema' in self.config['db'] else role
+        self._admin_conn = psycopg2.connect(self.config['db']['admin_dsn'])
+        with self._admin_conn.cursor() as cur:
+            cur.execute("SELECT COUNT(rolname) FROM pg_roles WHERE rolname = %(role_name)s;",
+                        {'role_name': role})
+            role_count = cur.fetchone()
+            if role_count[0] == 0:
+                cur.execute(
+                    psycopg2.sql.SQL('CREATE ROLE {} ENCRYPTED PASSWORD %(password)s LOGIN').format(
+                        psycopg2.sql.Identifier(role)),
+                    {'password': password})
+                self._admin_conn.commit()
+            cur.execute(psycopg2.sql.SQL('CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}').format(
+                psycopg2.sql.Identifier(schema),
+                psycopg2.sql.Identifier(role)))
+            self._admin_conn.commit()
+            cur.execute(psycopg2.sql.SQL('ALTER ROLE {} SET search_path TO {}').format(
+                psycopg2.sql.Identifier(role),
+                psycopg2.sql.Identifier(schema)))
+            self._admin_conn.commit()
+
+
+@pytest.fixture(scope='session', autouse=False)
+def ted() -> TED:
+    """Test Environment on Demand
+
+    Read a config file to establish a class containing information about the test environment to be injected into
+    all tests that require one.
+    """
+    try:
+        ted = TED()
+        yield ted
+        LOGGER.info('Teardown')
+    except TEDException as te:
+        if te.skip:
+            pytest.skip(msg=te.msg)
+
+
+@pytest.fixture(scope='module')
+def ted_client(ted):
+    ted.assert_db()
+    app = create_app({'TESTING': True,
+                      'SQLALCHEMY_DATABASE_URI': ted.config['db']['user_dsn']})
+    with app.app_context():
+        upgrade(directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))
+        db.create_all()
+    with app.test_client() as client:
+        yield client
