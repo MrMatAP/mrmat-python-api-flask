@@ -21,7 +21,7 @@ This variant of a Python Flask API is code-first and using native Flask
 In bash:
 
 ```shell
-$ pip install -r build-requirements.txt  # Manually install dependencies (see note in requirements.txt!)
+$ pip install -r requirements.txt  # Manually install dependencies (see note in requirements.txt!)
 $ export PYTHONPATH=`pwd`                # In order to find the build-time ci module
 $ export MRMAT_VERSION=1.0.27            # Optional: To influence the version. Normally calculated and set by CI
 $ python -m build -n                     # Use -n in an interactive, virtual environment
