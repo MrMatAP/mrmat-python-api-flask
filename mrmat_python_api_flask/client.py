@@ -29,11 +29,9 @@ import json
 from time import sleep
 from argparse import ArgumentParser, Namespace
 from typing import List, Optional, Dict
-import cli_ui
-from halo import Halo
 import requests
 
-from mrmat_python_api_flask import __version__
+from mrmat_python_api_flask import __version__, log
 
 
 class ClientException(Exception):
@@ -76,7 +74,6 @@ def oidc_device_auth(config: Dict, discovery: Dict) -> Dict:
     return data
 
 
-@Halo(text='Checking authentication')
 def oidc_check_auth(config: Dict, discovery: Dict, device_auth: Dict):
     wait = 5
     stop = False
@@ -159,7 +156,6 @@ def main(argv=None) -> int:
     args = parse_args(argv if argv is not None else sys.argv[1:])
     if args is None:
         return 0
-    cli_ui.setup(verbose=args.debug, quiet=args.quiet, timestamp=False)
 
     #
     # Read from the config file by default, but allow overrides via the CLI
@@ -191,23 +187,23 @@ def main(argv=None) -> int:
             raise ClientException(msg='No expires_in in device_auth')
 
         # Adding the user code to the URL is convenient, but not as secure as it could be
-        cli_ui.info(f'Please visit {device_auth["verification_uri"]} within {device_auth["expires_in"]} seconds and '
+        log.info(f'Please visit {device_auth["verification_uri"]} within {device_auth["expires_in"]} seconds and '
                     f'enter code {device_auth["user_code"]}. Or just visit {device_auth["verification_uri_complete"]}')
 
         auth = oidc_check_auth(config, discovery, device_auth)
-        cli_ui.info('Authenticated')
+        log.info('Authenticated')
 
         #
         # We're using requests directly here because requests_oauthlib doesn't support device code flow directly
 
         resp = requests.get('http://127.0.0.1:5000/api/greeting/v3/',
                             headers={'Authorization': f'Bearer {auth["id_token"]}'})
-        cli_ui.info(f'Status Code: {resp.status_code}')
-        cli_ui.info(resp.content)
+        log.info(f'Status Code: {resp.status_code}')
+        log.info(resp.content)
 
         return 0
     except ClientException as ce:
-        cli_ui.error(ce.msg)
+        log.error(ce.msg)
         return ce.exit_code
 
 

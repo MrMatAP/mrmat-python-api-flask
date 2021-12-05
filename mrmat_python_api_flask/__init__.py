@@ -25,8 +25,11 @@
 
 import sys
 import os
+import logging
 import importlib.metadata
-from logging.config import dictConfig
+
+from rich.console import Console
+from rich.logging import RichHandler
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -34,33 +37,18 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
 
+logging.basicConfig(level='INFO',
+                    handlers=[RichHandler(rich_tracebacks=True,
+                                          show_path=False,
+                                          omit_repeated_times=False)])
+log = logging.getLogger(__name__)
+console = Console()
+
 __version__ = importlib.metadata.version('mrmat-python-api-flask')
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 oidc = OpenIDConnect()
-
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s: %(message)s',
-    }},
-    'handlers': {
-        'wsgi': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://flask.logging.wsgi_errors_stream',
-            'formatter': 'default'
-        }
-    },
-    'root': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    },
-    'mrmat_python_api_flask': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    }
-})
 
 
 def create_app(config_override=None, instance_path=None):
@@ -82,7 +70,8 @@ def create_app(config_override=None, instance_path=None):
     #
     # Set configuration defaults. If a config file is present then load it. If we have overrides, apply them
 
-    app.config.setdefault('SECRET_KEY', os.urandom(16))
+    # TODO
+    #app.config.setdefault('SECRET_KEY', 'JFg4K1l5vVmusHmI0cNAFg')
     app.config.setdefault('SQLALCHEMY_DATABASE_URI',
                           'sqlite+pysqlite:///' + os.path.join(app.instance_path, 'mrmat-python-api-flask.sqlite'))
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)

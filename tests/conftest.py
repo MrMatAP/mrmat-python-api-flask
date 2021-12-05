@@ -23,20 +23,25 @@
 import os
 import logging
 import json
+from typing import Optional, List, Dict
 
+import pytest
+import requests
+import oauthlib.oauth2
+import requests_oauthlib
+
+import jwt
+import contextlib
+import secrets
 import psycopg2
 import psycopg2.sql
 import psycopg2.extensions
-import pytest
 
-from typing import Optional, List, Dict
-
-import jwt
-import oauthlib.oauth2
-import requests_oauthlib
 from flask_migrate import upgrade
+from keycloak import KeycloakOpenID, KeycloakAdmin
+from keycloak.exceptions import KeycloakOperationError
 
-from mrmat_python_api_flask import create_app, db, migrate
+from mrmat_python_api_flask import create_app, db
 
 LOGGER = logging.getLogger(__name__)
 
@@ -166,7 +171,8 @@ class TED:
     config_file: str = None
     config: dict = {}
 
-    _admin_conn: psycopg2.extensions.connection = None
+    _db_admin_conn: psycopg2.extensions.connection = None
+    _auth_admin_token: str = None
 
     def __init__(self):
         if 'TED_CONFIG' not in os.environ:
@@ -180,20 +186,25 @@ class TED:
             self.config = json.load(C)
         if 'db' in self.config:
             self.admin_dsn = self.config['db']['admin_dsn']
-            self.user_dsn = self.config['db']['user_dsn']
-            self.assert_db()
+            self._db_admin_conn = psycopg2.connect(self.config['db']['admin_dsn'])
+        if 'auth' in self.config:
+            self._keycloak_admin = KeycloakAdmin(server_url=self.config['auth']['admin_url'],
+                                                 username=self.config['auth']['admin_user'],
+                                                 password=self.config['auth']['admin_password'],
+                                                 realm_name=self.config['auth']['admin_realm'],
+                                                 verify=True)
 
     def teardown(self):
-        if self._admin_conn is not None:
-            self._admin_conn.close()
+        if self._db_admin_conn is not None:
+            self._db_admin_conn.close()
 
-    def assert_db(self):
-        user_dsn_info: psycopg2.extensions.ConnectionInfo = psycopg2.extensions.parse_dsn(self.user_dsn)
-        role = user_dsn_info['user']
-        password = user_dsn_info['password']
-        schema = self.config['db']['user_force_schema'] if 'user_force_schema' in self.config['db'] else role
-        self._admin_conn = psycopg2.connect(self.config['db']['admin_dsn'])
-        with self._admin_conn.cursor() as cur:
+    @contextlib.contextmanager
+    def db_dsn(self,
+               role: str = 'test',
+               password: str = 'test',
+               schema: str = 'test',
+               drop_finally: bool = False):
+        with self._db_admin_conn.cursor() as cur:
             cur.execute("SELECT COUNT(rolname) FROM pg_roles WHERE rolname = %(role_name)s;",
                         {'role_name': role})
             role_count = cur.fetchone()
@@ -202,20 +213,147 @@ class TED:
                     psycopg2.sql.SQL('CREATE ROLE {} ENCRYPTED PASSWORD %(password)s LOGIN').format(
                         psycopg2.sql.Identifier(role)),
                     {'password': password})
-                self._admin_conn.commit()
+                self._db_admin_conn.commit()
             cur.execute(psycopg2.sql.SQL('CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}').format(
                 psycopg2.sql.Identifier(schema),
                 psycopg2.sql.Identifier(role)))
-            self._admin_conn.commit()
+            self._db_admin_conn.commit()
             cur.execute(psycopg2.sql.SQL('ALTER ROLE {} SET search_path TO {}').format(
                 psycopg2.sql.Identifier(role),
                 psycopg2.sql.Identifier(schema)))
-            self._admin_conn.commit()
+            self._db_admin_conn.commit()
+        try:
+            dsn_info = psycopg2.extensions.ConnectionInfo = psycopg2.extensions.parse_dsn(self.admin_dsn)
+            user_dsn = f"postgresql://{role}:{password}@{dsn_info['host']}:{dsn_info['port']}/{dsn_info['dbname']}"
+            yield user_dsn
+        finally:
+            if drop_finally:
+                LOGGER.info(f'Dropping schema {schema} and associated role {role}')
+                with self._db_admin_conn.cursor() as cur:
+                    cur.execute(
+                        psycopg2.sql.SQL('DROP SCHEMA {} CASCADE').format(
+                            psycopg2.sql.Identifier(schema)))
+                    cur.execute(
+                        psycopg2.sql.SQL('DROP ROLE {}').format(
+                            psycopg2.sql.Identifier(role)))
+                    self._db_admin_conn.commit()
+
+    @contextlib.contextmanager
+    def auth_user(self,
+                  tmpdir,
+                  client_id: str = 'test-client',
+                  ted_id: str = 'ted-client',
+                  user_id: str = 'test-user',
+                  user_password: str = 'test-password',
+                  scopes: List[str] = None,
+                  scope: str = 'test-scope',
+                  redirect_uris: List = None,
+                  drop_finally: bool = False):
+        try:
+            if scopes is None:
+                scopes = []
+            for scope in scopes:
+                self._keycloak_admin.create_client_scope({
+                    'id': scope,
+                    'name': scope,
+                    'description': f'Test {scope}',
+                    'protocol': 'openid-connect'
+                }, skip_exists=True)
+            if not self._keycloak_admin.get_client_id(client_id):
+                self._keycloak_admin.create_client({
+                    'id': client_id,
+                    'name': client_id,
+                    'publicClient': False,
+                    'optionalClientScopes': scopes
+                })
+            client_secret = self._keycloak_admin.generate_client_secrets(client_id)
+            if not self._keycloak_admin.get_client_id(ted_id):
+                self._keycloak_admin.create_client({
+                    'id': ted_id,
+                    'name': ted_id,
+                    'publicClient': False,
+                    'redirectUris': ['http://localhost'],
+                    'directAccessGrantsEnabled': True,
+                    'optionalClientScopes': scopes
+                })
+            ted_secret = self._keycloak_admin.generate_client_secrets(ted_id)
+
+            self._keycloak_admin.create_user({
+                'id': user_id,
+                'emailVerified': True,
+                'enabled': True,
+                'firstName': 'Test',
+                'lastName': 'User',
+                'username': user_id,
+                'credentials': [
+                    {'value': user_password}
+                ]
+            }, exist_ok=True)
+
+            keycloak = KeycloakOpenID(server_url=self._keycloak_admin.server_url,
+                                      client_id=ted_id,
+                                      client_secret_key=ted_secret['value'],
+                                      realm_name='master',
+                                      verify=True)
+            discovery = keycloak.well_know()
+            with open(f'{tmpdir}/client_secrets.json', 'w') as cs:
+                json.dump({
+                    'web': {
+                        'client_id': client_id,
+                        'client_secret': client_secret['value'],
+                        'auth_uri': discovery['authorization_endpoint'],
+                        'token_uri': discovery['token_endpoint'],
+                        'userinfo_uri': discovery['userinfo_endpoint'],
+                        'token_introspection_uri': discovery['introspection_endpoint'],
+                        'issuer': discovery['issuer'],
+                        'redirect_uris': redirect_uris
+                    }
+                }, cs)
+
+            self._auth_info = {
+                'client_secrets_file': f'{tmpdir}/client_secrets.json',
+                'client_id': client_id,
+                'client_secret': client_secret['value'],
+                'ted_id': ted_id,
+                'ted_secret': ted_secret['value'],
+                'user_id': user_id,
+                'user_password': user_password,
+                'scope': scope
+            }
+            yield self._auth_info
+
+        except KeycloakOperationError as koe:
+            LOGGER.exception(koe)
+        finally:
+            if drop_finally:
+                LOGGER.info(f'Deleting user_id {user_id}')
+                self._keycloak_admin.delete_user(user_id)
+                LOGGER.info(f'Deleting client_id {client_id}')
+                self._keycloak_admin.delete_client(client_id)
+                LOGGER.info(f'Deleting client_id {ted_id}')
+                self._keycloak_admin.delete_client(ted_id)
+                LOGGER.info(f'Deleting scope {scope}')
+
+    @contextlib.contextmanager
+    def auth_token(self, scopes: List[str]):
+        try:
+            keycloak = KeycloakOpenID(server_url=self._keycloak_admin.server_url,
+                                      client_id=self._auth_info['ted_id'],
+                                      client_secret_key=self._auth_info['ted_secret'],
+                                      realm_name='master',
+                                      verify=True)
+            token = keycloak.token(self._auth_info['user_id'],
+                                   self._auth_info['user_password'],
+                                   scope=scopes)
+            yield token
+        finally:
+            pass
 
 
 @pytest.fixture(scope='session', autouse=False)
 def ted() -> TED:
-    """Test Environment on Demand
+    """
+    Main fixture for Test Environment on Demand
 
     Read a config file to establish a class containing information about the test environment to be injected into
     all tests that require one.
@@ -229,13 +367,18 @@ def ted() -> TED:
             pytest.skip(msg=te.msg)
 
 
-@pytest.fixture(scope='module')
-def ted_client(ted):
-    ted.assert_db()
-    app = create_app({'TESTING': True,
-                      'SQLALCHEMY_DATABASE_URI': ted.config['db']['user_dsn']})
-    with app.app_context():
-        upgrade(directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))
-        db.create_all()
-    with app.test_client() as client:
-        yield client
+@pytest.fixture
+def ted_client(ted, tmpdir):
+    with ted.db_dsn(role='mpaf', password='mpaf', schema='mpaf') as dsn:
+        with ted.auth_user(tmpdir, scopes=['mpaf-read', 'mpaf-write']) as auth:
+            app = create_app({
+                'TESTING': True,
+                'SECRET_KEY': secrets.token_hex(16),
+                'SQLALCHEMY_DATABASE_URI': dsn,
+                'OIDC_CLIENT_SECRETS': auth['client_secrets_file']
+            })
+            with app.app_context():
+                upgrade(directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))
+                db.create_all()
+            with app.test_client() as client:
+                yield {'auth': auth, 'client': client}

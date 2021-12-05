@@ -27,6 +27,7 @@ from flask import Response
 from flask.testing import FlaskClient
 
 
+@pytest.mark.skip
 def test_greeting_v3(client: FlaskClient, test_config: Dict, oidc_token_read: Optional[Dict]):
     if oidc_token_read is None:
         pytest.skip('Skip test because there is no OIDC client configuration')

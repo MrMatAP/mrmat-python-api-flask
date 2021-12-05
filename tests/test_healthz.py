@@ -20,10 +20,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import pytest
+
 from flask import Response
 from flask.testing import FlaskClient
 
 
+@pytest.mark.skip
 def test_healthz(client: FlaskClient):
     rv: Response = client.get('/healthz/')
     json_body = rv.get_json()

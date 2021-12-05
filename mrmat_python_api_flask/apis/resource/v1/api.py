@@ -38,11 +38,11 @@ logger = LocalProxy(lambda: current_app.logger)
 
 def _extract_identity() -> Tuple:
     return g.oidc_token_info['client_id'], \
-           g.oidc_token_info['preferred_username']
+           g.oidc_token_info['username']
 
 
 @bp.route('/', methods=['GET'])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-read'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_all():
     identity = _extract_identity()
     logger.info(f'Called by {identity[1]} ({identity[0]}')
@@ -51,7 +51,7 @@ def get_all():
 
 
 @bp.route('/<i>', methods=['GET'])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-read'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_one(i: int):
     identity = _extract_identity()
     logger.info(f'Called by {identity[1]} ({identity[0]}')
@@ -62,7 +62,7 @@ def get_one(i: int):
 
 
 @bp.route('/', methods=['POST'])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def create():
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {name} ({client_id}')
@@ -99,7 +99,7 @@ def create():
 
 
 @bp.route('/<i>', methods=['PUT'])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def modify(i: int):
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {name} ({client_id}')
@@ -118,7 +118,7 @@ def modify(i: int):
 
 
 @bp.route('/<i>', methods=['DELETE'])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def remove(i: int):
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {name} ({client_id}')
