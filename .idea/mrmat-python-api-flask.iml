@@ -17,7 +17,7 @@
       <excludeFolder url="file://$MODULE_DIR$/var/terraform/.terraform" />
       <excludeFolder url="file://$MODULE_DIR$/instance" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9 (mrmat-python-api-flask)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.10 (mrmat-python-api-flask)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyBDDFrameworkConfig">
