@@ -20,8 +20,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import pytest
-
 from flask import Response
 from flask.testing import FlaskClient
 from typing import Tuple, Dict, Optional
