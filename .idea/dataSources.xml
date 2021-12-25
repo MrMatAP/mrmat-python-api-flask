@@ -1,25 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="nostromodb" uuid="8c71eaf3-f64b-4366-8db6-d08f10b6c06b">
+    <data-source source="LOCAL" name="mpaf@localdb" uuid="8c71eaf3-f64b-4366-8db6-d08f10b6c06b">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/nostromodb</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/localdb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="postgres@betty" uuid="ef2d080c-8c83-474c-8e10-843f15d3f247">
+    <data-source source="LOCAL" name="postgres@localdb" uuid="ae0c541c-f10e-4e25-aa91-0ab6c7dca334">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/bettydb</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="postgres@harkonnen" uuid="09357e79-72cf-49be-9b8e-3d10e22b0f9f">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/harkdb</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/localdb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

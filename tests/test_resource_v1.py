@@ -21,23 +21,26 @@
 #  SOFTWARE.
 
 import pytest
+from datetime import datetime
 
-from typing import Dict
 from flask.testing import FlaskClient
 
 from resource_api_client import ResourceAPIClient
 
 
-def test_create(client: FlaskClient, oidc_token_write: Dict):
-    if oidc_token_write is None:
-        pytest.skip('No OIDC configuration is available')
-    rac = ResourceAPIClient(client, token=oidc_token_write)
-    (resp, resp_body) = rac.create(name='Test Resource 1')
-    assert resp.status_code == 201
-    assert resp_body['id'] == 1
-    assert resp_body['name'] == 'Test Resource 1'
+def test_create(ted, ted_client: FlaskClient):
+    with ted.auth_token(['mpaf-write']) as token:
+        rac = ResourceAPIClient(ted_client['client'], token=token)
+        now = datetime.utcnow()
+        (resp, resp_body) = rac.create(name=f'Test Resource {now}')
+        assert resp.status_code == 201
+        assert resp_body['id'] is not None
+        assert resp_body['name'] == f'Test Resource {now}'
+        (resp, resp_body) = rac.remove(resp_body['id'])
+        assert resp.status_code == 204
 
 
+@pytest.mark.skip
 def test_modify(client: FlaskClient, oidc_token_write):
     if oidc_token_write is None:
         pytest.skip('No OIDC configuration is available')
@@ -54,6 +57,7 @@ def test_modify(client: FlaskClient, oidc_token_write):
     assert resp_body['name'] == 'Test Resource Modified'
 
 
+@pytest.mark.skip
 def test_remove(client: FlaskClient, oidc_token_write):
     if oidc_token_write is None:
         pytest.skip('No OIDC configuration is available')
@@ -67,6 +71,7 @@ def test_remove(client: FlaskClient, oidc_token_write):
     assert resp_body is None
 
 
+@pytest.mark.skip
 def test_get_all(client: FlaskClient, oidc_token_read, oidc_token_write):
     if oidc_token_read is None or oidc_token_write is None:
         pytest.skip('No OIDC configuration is available')
@@ -87,6 +92,7 @@ def test_get_all(client: FlaskClient, oidc_token_read, oidc_token_write):
     assert len(resp_body['resources']) == 1
 
 
+@pytest.mark.skip
 def test_get_one(client: FlaskClient, oidc_token_read, oidc_token_write):
     if oidc_token_read is None or oidc_token_write is None:
         pytest.skip('No OIDC configuration is available')
