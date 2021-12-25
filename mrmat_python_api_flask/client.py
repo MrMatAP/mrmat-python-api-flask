@@ -162,7 +162,7 @@ def main(argv=None) -> int:
 
     config = {}
     if os.path.exists(os.path.expanduser(args.config)):
-        with open(os.path.expanduser(args.config)) as c:
+        with open(os.path.expanduser(args.config), encoding='UTF-8') as c:
             config = json.load(c)
     config_override = vars(args)
     for key in config_override.keys() & config_override.keys():
@@ -187,8 +187,11 @@ def main(argv=None) -> int:
             raise ClientException(msg='No expires_in in device_auth')
 
         # Adding the user code to the URL is convenient, but not as secure as it could be
-        log.info(f'Please visit {device_auth["verification_uri"]} within {device_auth["expires_in"]} seconds and '
-                    f'enter code {device_auth["user_code"]}. Or just visit {device_auth["verification_uri_complete"]}')
+        log.info('Please visit {} within {} seconds and enter code {}. Or just visit {}',
+                 device_auth['verification_uri'],
+                 device_auth['expires_in'],
+                 device_auth['user_code'],
+                 device_auth['verification_uri_complete'])
 
         auth = oidc_check_auth(config, discovery, device_auth)
         log.info('Authenticated')
@@ -198,7 +201,7 @@ def main(argv=None) -> int:
 
         resp = requests.get('http://127.0.0.1:5000/api/greeting/v3/',
                             headers={'Authorization': f'Bearer {auth["id_token"]}'})
-        log.info(f'Status Code: {resp.status_code}')
+        log.info('Status Code: {}', resp.status_code)
         log.info(resp.content)
 
         return 0

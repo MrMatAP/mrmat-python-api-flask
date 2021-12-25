@@ -98,7 +98,6 @@ def create_app(config_override=None, instance_path=None):
     # When using Flask-SQLAlchemy, there is no need to explicitly import DAO classes because they themselves
     # inherit from the SQLAlchemy model
 
-    global db, ma, migrate
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
