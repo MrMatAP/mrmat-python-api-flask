@@ -22,3 +22,4 @@ pylint~=2.11.1      # GPL-2.0-or-later
 pytest~=6.2.5       # MIT
 pytest-cov~=3.0.0   # MIT
 pyjwt==2.3.0        # MIT
+python-keycloak~=0.26.1     # MIT
