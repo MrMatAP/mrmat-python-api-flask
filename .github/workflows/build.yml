@@ -9,7 +9,7 @@ name: Build
 env:
   MAJOR: 0
   MINOR: 0
-  PYTHON_VERSION: 3.9.6
+  PYTHON_VERSION: 3.10.1
 
 #
 # Establish when the workflow is run
@@ -62,13 +62,14 @@ jobs:
     - name: Establish a cache for dependencies
       uses: actions/cache@v2
       with:
-        path: ~/.local
+        path: ${HOME}/.local
         key: ${{ runner.os }}
 
     - name: Build
       run: |
+        export PYTHONUSERBASE=${HOME}/.local
         pip install --user -r requirements.txt
-        pylint ${GITHUB_WORKSPACE}/mrmat_python_api_flask
+        ${PYTHONUSERBASE}/bin/pylint ${GITHUB_WORKSPACE}/mrmat_python_api_flask
         PYTHONPATH=${GITHUB_WORKSPACE} python -m pytest --cov=mrmat_python_api_flask
         PYTHONPATH=${GITHUB_WORKSPACE} python -m build --wheel -n
 
