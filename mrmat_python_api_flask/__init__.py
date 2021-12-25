@@ -44,7 +44,12 @@ logging.basicConfig(level='INFO',
 log = logging.getLogger(__name__)
 console = Console()
 
-__version__ = importlib.metadata.version('mrmat-python-api-flask')
+try:
+    __version__ = importlib.metadata.version('mrmat-python-api-flask')
+except importlib.metadata.PackageNotFoundError:
+    # You have not actually installed the wheel yet. We may be within CI so pick that version or fall back
+    __version__ = os.environ.get('MRMAT_VERSION', '0.0.0.dev0')
+
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
