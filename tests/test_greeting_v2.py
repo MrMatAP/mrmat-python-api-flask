@@ -23,12 +23,14 @@
 import pytest
 
 from flask import Response
-from flask.testing import FlaskClient
 
 
-@pytest.mark.skip
-def test_greeting_v2(client: FlaskClient):
-    rv: Response = client.get('/api/greeting/v2/?name=MrMat')
-    json_body = rv.get_json()
-    assert 'message' in json_body
-    assert json_body['message'] == 'Hello MrMat'
+@pytest.mark.usefixtures('no_test_infrastructure')
+class TestWithoutInfrastructure:
+
+    def test_greeting_v2(self, no_test_infrastructure):
+        with no_test_infrastructure.app_client() as client:
+            rv: Response = client.get('/api/greeting/v2/?name=MrMat')
+            json_body = rv.get_json()
+            assert 'message' in json_body
+            assert json_body['message'] == 'Hello MrMat'

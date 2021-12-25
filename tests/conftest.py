@@ -19,7 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
-import abc
+
 import os
 import logging
 import json
@@ -36,7 +36,7 @@ import psycopg2.sql
 import psycopg2.extensions
 
 from flask_migrate import upgrade
-from keycloak import KeycloakOpenID, KeycloakAdmin
+from keycloak.keycloak_admin import KeycloakOpenID, KeycloakAdmin
 from keycloak.exceptions import KeycloakOperationError
 
 from mrmat_python_api_flask import create_app, db
@@ -140,7 +140,7 @@ class LocalTestInfrastructure(object):
             self._pg_admin.commit()
             cur.close()
 
-            dsn_info = psycopg2.extensions.ConnectionInfo = psycopg2.extensions.parse_dsn(self._ti_config['keycloak'].
+            dsn_info = psycopg2.extensions.ConnectionInfo = psycopg2.extensions.parse_dsn(self._ti_config['pg'].
                                                                                           get('admin_dsn'))
             app_dsn = f"postgresql://{role}:{password}@{dsn_info['host']}:{dsn_info['port']}/{dsn_info['dbname']}"
             yield app_dsn
@@ -171,12 +171,13 @@ class LocalTestInfrastructure(object):
             if scopes is None:
                 scopes = []
             for scope in scopes:
-                self._keycloak_admin.create_client_scope({
-                    'id': scope,
-                    'name': scope,
-                    'description': f'Test {scope}',
-                    'protocol': 'openid-connect'
-                }, skip_exists=True)
+                if not self._keycloak_admin.get_client_scope(scope):
+                    self._keycloak_admin.create_client_scope({
+                        'id': scope,
+                        'name': scope,
+                        'description': f'Test {scope}',
+                        'protocol': 'openid-connect'
+                    })
             if not self._keycloak_admin.get_client_id(client_id):
                 self._keycloak_admin.create_client({
                     'id': client_id,
@@ -255,8 +256,9 @@ class LocalTestInfrastructure(object):
             yield self._app
 
     @contextlib.contextmanager
-    def app_client(self):
-        yield self._app.test_client()
+    def app_client(self, app_dir):
+        with self.app(app_dir) as app:
+            yield app.test_client()
 
     @contextlib.contextmanager
     def user_token(self,
@@ -282,9 +284,8 @@ class LocalTestInfrastructure(object):
                                       client_secret_key=self._auth_info['ti_secret'],
                                       realm_name='master',
                                       verify=True)
-            token = keycloak.token(self._auth_info['user_id'],
-                                   self._auth_info['user_password'],
-                                   scope=scopes)
+            token = keycloak.token(user_id, user_password, scope=scopes)
+            token['user_id'] = user_id
             yield token
         finally:
             if drop_finally:
@@ -311,5 +312,5 @@ def local_test_infrastructure():
 
     """
     if 'TI_CONFIG' not in os.environ:
-        raise TIException(skip=True, msg='There is no TI_CONFIG environment variable to configure the environment')
+        pytest.skip('There is TI_CONFIG environment variable configuring local infrastructure to test with')
     yield LocalTestInfrastructure(ti_config_path=pathlib.Path(os.path.expanduser(os.getenv('TI_CONFIG'))))

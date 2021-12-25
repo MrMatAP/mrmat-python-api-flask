@@ -21,19 +21,18 @@
 #  SOFTWARE.
 
 import pytest
-
-from typing import Optional, Dict
 from flask import Response
-from flask.testing import FlaskClient
 
 
-@pytest.mark.skip
-def test_greeting_v3(client: FlaskClient, test_config: Dict, oidc_token_read: Optional[Dict]):
-    if oidc_token_read is None:
-        pytest.skip('Skip test because there is no OIDC client configuration')
-    rv: Response = client.get('/api/greeting/v3/',
-                              headers={'Authorization': f'Bearer {oidc_token_read["access_token"]}'})
-    assert rv.status_code == 200
-    json_body = rv.get_json()
-    assert 'message' in json_body
-    assert json_body['message'] == f'Hello {test_config["client"]["preferred_name"]}'
+@pytest.mark.usefixtures('local_test_infrastructure')
+class TestWithLocalInfrastructure:
+
+    def test_greeting_v3(self, tmpdir, local_test_infrastructure):
+        with local_test_infrastructure.app_client(tmpdir) as client:
+            with local_test_infrastructure.user_token() as user_token:
+                rv: Response = client.get('/api/greeting/v3/',
+                                          headers={'Authorization': f'Bearer {user_token["access_token"]}'})
+                assert rv.status_code == 200
+                json_body = rv.get_json()
+                assert 'message' in json_body
+                assert json_body['message'] == f'Hello {user_token["user_id"]}'
