@@ -1,4 +1,4 @@
-FROM python:3.9.5-slim
+FROM python:3.10.1-slim
 
 ADD migrations /migrations
 COPY dist/mrmat_python_api_flask-*.whl /
