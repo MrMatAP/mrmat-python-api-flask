@@ -23,24 +23,14 @@
 """Blueprint for the Greeting API in V3
 """
 
-from flask import g
-from flask.views import MethodView
-from flask_smorest import Blueprint
+from flask import Blueprint, g
+
 from mrmat_python_api_flask import oidc
-from .model import GreetingV3Output, greeting_v3_output
 
-bp = Blueprint('greeting_v3',
-               __name__,
-               description='The Greeting V3 API')
+bp = Blueprint('greeting_v3', __name__)
 
 
-@bp.route('/')
-class GreetingV3(MethodView):
-
-    @oidc.accept_token(require_token=True)
-    @bp.doc(security=[{'mrmat_keycloak': ['profile']}])
-    @bp.response(200, GreetingV3Output)
-    def get(self):
-        """Get a greeting for your asserted name from a JWT token
-        """
-        return greeting_v3_output.dump({'message': f'Hello {g.oidc_token_info["preferred_username"]}'}), 200
+@bp.route('/', methods=['GET'])
+@oidc.accept_token(require_token=True)
+def get():
+    return {'message': f'Hello {g.oidc_token_info["username"]}'}, 200

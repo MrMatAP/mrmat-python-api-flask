@@ -21,87 +21,63 @@
 #  SOFTWARE.
 
 import pytest
-
-from typing import Dict
-from flask.testing import FlaskClient
+from datetime import datetime
 
 from resource_api_client import ResourceAPIClient
 
 
-def test_create(client: FlaskClient, oidc_token_write: Dict):
-    if oidc_token_write is None:
-        pytest.skip('No OIDC configuration is available')
-    rac = ResourceAPIClient(client, token=oidc_token_write)
-    (resp, resp_body) = rac.create(name='Test Resource 1')
-    assert resp.status_code == 201
-    assert resp_body['id'] == 1
-    assert resp_body['name'] == 'Test Resource 1'
+@pytest.mark.usefixtures('local_test_infrastructure')
+class TestWithLocalInfrastructure:
 
+    def test_resource_lifecycle(self, tmpdir, local_test_infrastructure):
+        with local_test_infrastructure.app_client(tmpdir) as client:
+            with local_test_infrastructure.user_token(scopes=['mpaf-read', 'mpaf-write']) as user_token:
+                rac = ResourceAPIClient(client, token=user_token['access_token'])
 
-def test_modify(client: FlaskClient, oidc_token_write):
-    if oidc_token_write is None:
-        pytest.skip('No OIDC configuration is available')
-    rac = ResourceAPIClient(client, token=oidc_token_write)
+                resource_name = f'Test Resource {datetime.utcnow()}'
+                (resp, resp_body) = rac.create(name=resource_name)
+                assert resp.status_code == 201
+                assert resp_body['id'] is not None
+                assert resp_body['name'] == resource_name
+                resource_id = resp_body['id']
 
-    (resp, resp_body) = rac.create(name='Test Resource Original')
-    assert resp.status_code == 201
-    assert resp_body['id'] == 1
-    assert resp_body['name'] == 'Test Resource Original'
+                (resp, resp_body) = rac.get_all()
+                assert resp.status_code == 200
+                assert 'resources' in resp_body
+                assert len(resp_body['resources']) == 0
 
-    (resp, resp_body) = rac.modify(1, name='Test Resource Modified')
-    assert resp.status_code == 200
-    assert resp_body['id'] == 1
-    assert resp_body['name'] == 'Test Resource Modified'
+                (resp, resp_body) = rac.get_one(resource_id)
+                assert resp.status_code == 200
+                assert resp_body['id'] == resource_id
+                assert resp_body['name'] == resource_name
 
+                resource_name_modified = f'Modified Resource {datetime.utcnow()}'
+                (resp, resp_body) = rac.modify(resource_id, name=resource_name_modified)
+                assert resp.status_code == 200
+                assert resp_body['id'] == resource_id
+                assert resp_body['name'] == resource_name_modified
 
-def test_remove(client: FlaskClient, oidc_token_write):
-    if oidc_token_write is None:
-        pytest.skip('No OIDC configuration is available')
-    rac = ResourceAPIClient(client, token=oidc_token_write)
-    (resp, resp_body) = rac.create(name='Short-lived Test Resource')
-    assert resp.status_code == 201
-    assert resp_body['id'] == 1
+                (resp, resp_body) = rac.remove(resource_id)
+                assert resp.status_code == 204
+                assert resp_body is None
 
-    (resp, resp_body) = rac.remove(1)
-    assert resp.status_code == 204
-    assert resp_body is None
+                (resp, resp_body) = rac.remove(resource_id)
+                assert resp.status_code == 410
+                assert resp_body['message'] == 'The requested resource is permanently deleted'
+                assert resp_body['status'] == 410
 
+    def test_insufficient_scope(self, tmpdir, local_test_infrastructure):
+        with local_test_infrastructure.app_client(tmpdir) as client:
+            with local_test_infrastructure.user_token(scopes=['mpaf-read']) as user_token:
+                rac = ResourceAPIClient(client, token=user_token['access_token'])
 
-def test_get_all(client: FlaskClient, oidc_token_read, oidc_token_write):
-    if oidc_token_read is None or oidc_token_write is None:
-        pytest.skip('No OIDC configuration is available')
-    rac_read = ResourceAPIClient(client, token=oidc_token_read)
-    rac_write = ResourceAPIClient(client, token=oidc_token_write)
+                (resp, resp_body) = rac.create(name='Unauthorised')
+                assert resp.status_code == 401
+                assert resp_body is None
 
-    (resp, resp_body) = rac_read.get_all()
-    assert resp.status_code == 200
-    assert 'resources' in resp_body
-    assert len(resp_body['resources']) == 0
+                (resp, resp_body) = rac.modify(1, name='Unauthorised')
+                assert resp.status_code == 401
 
-    (resp, resp_body) = rac_write.create(name='Test Resource 2')
-    assert resp.status_code == 201
-    assert resp_body['id'] >= 0
-
-    (resp, resp_body) = rac_read.get_all()
-    assert resp.status_code == 200
-    assert len(resp_body['resources']) == 1
-
-
-def test_get_one(client: FlaskClient, oidc_token_read, oidc_token_write):
-    if oidc_token_read is None or oidc_token_write is None:
-        pytest.skip('No OIDC configuration is available')
-    rac_read = ResourceAPIClient(client, token=oidc_token_read)
-    rac_write = ResourceAPIClient(client, token=oidc_token_write)
-
-    (resp, resp_body) = rac_read.get_one(1)
-    assert resp.status_code == 404
-    assert resp_body is None
-
-    (resp, resp_body) = rac_write.create(name='Test Resource 3')
-    assert resp.status_code == 201
-    assert resp_body['id'] == 1
-
-    (resp, resp_body) = rac_read.get_one(1)
-    assert resp.status_code == 200
-    assert resp_body['id'] == 1
-    assert resp_body['name'] == 'Test Resource 3'
+                (resp, resp_body) = rac.remove(1)
+                assert resp.status_code == 401
+                assert resp_body is None

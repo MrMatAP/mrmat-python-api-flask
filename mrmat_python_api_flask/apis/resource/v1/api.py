@@ -26,53 +26,46 @@
 from typing import Tuple
 
 from werkzeug.local import LocalProxy
-from flask import request, g, current_app
-#from flask import g, request
-from flask_smorest import Blueprint
+from flask import Blueprint, request, g, current_app
 from marshmallow import ValidationError
 
 from mrmat_python_api_flask import db, oidc
 from .model import Owner, Resource, resource_schema, resources_schema
 
-bp = Blueprint('resource_v1',
-               __name__,
-               description='The Resource V1 API')
+bp = Blueprint('resource_v1', __name__)
 logger = LocalProxy(lambda: current_app.logger)
 
 
 def _extract_identity() -> Tuple:
     return g.oidc_token_info['client_id'], \
-           g.oidc_token_info['preferred_username']
+           g.oidc_token_info['username']
 
 
-@bp.get('/')
-@bp.doc(security=[{'mrmat_keycloak': ['mrmat-python-api-flask-resource-read']}])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-read'])
+@bp.route('/', methods=['GET'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_all():
-    identity = _extract_identity()
-    logger.info(f'Called by {identity[1]} ({identity[0]}')
+    (client_id, name) = _extract_identity()
+    logger.info(f'Called by {client_id} for {name}')
     a = Resource.query.all()
     return {'resources': resources_schema.dump(a)}, 200
 
 
-@bp.get('/<i>')
-@bp.doc(security=[{'mrmat_keycloak': ['mrmat-python-api-flask-resource-read']}])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-read'])
+@bp.route('/<i>', methods=['GET'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_one(i: int):
-    identity = _extract_identity()
-    #logger.info(f'Called by {identity[1]} ({identity[0]}')
-    resource = Resource.query.filter(Resource.id == i).first_or_404()
+    (client_id, name) = _extract_identity()
+    logger.info(f'Called by {client_id} for {name}')
+    resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
         return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
     return resource_schema.dump(resource), 200
 
 
-@bp.post('/')
-@bp.doc(security=[{'mrmat_keycloak': ['mrmat-python-api-flask-resource-write']}])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
+@bp.route('/', methods=['POST'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def create():
     (client_id, name) = _extract_identity()
-    #logger.info(f'Called by {name} ({client_id}')
+    logger.info(f'Called by {client_id} for {name}')
     try:
         json_body = request.get_json()
         if not json_body:
@@ -105,12 +98,11 @@ def create():
     return resource_schema.dump(resource), 201
 
 
-@bp.put('/<i>')
-@bp.doc(security=[{'mrmat_keycloak': ['mrmat-python-api-flask-resource-write']}])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
+@bp.route('/<i>', methods=['PUT'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def modify(i: int):
     (client_id, name) = _extract_identity()
-    #logger.info(f'Called by {name} ({client_id}')
+    logger.info(f'Called by {client_id} for {name}')
     body = resource_schema.load(request.get_json())
 
     resource = Resource.query.filter(Resource.id == i).one_or_none()
@@ -125,16 +117,15 @@ def modify(i: int):
     return resource_schema.dump(resource), 200
 
 
-@bp.delete('/<i>')
-@bp.doc(security=[{'mrmat_keycloak': ['mrmat-python-api-flask-resource-write']}])
-@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
-def remove(self, i: int):
+@bp.route('/<i>', methods=['DELETE'])
+@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
+def remove(i: int):
     (client_id, name) = _extract_identity()
-    #logger.info(f'Called by {name} ({client_id}')
+    logger.info(f'Called by {client_id} for {name}')
 
     resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
-        return {'status': 410, 'message': 'Unable to find requested resource'}, 410
+        return {'status': 410, 'message': 'The requested resource is permanently deleted'}, 410
     if resource.owner.client_id != client_id:
         return {'status': 401, 'message': 'You do not own this resource'}, 401
 

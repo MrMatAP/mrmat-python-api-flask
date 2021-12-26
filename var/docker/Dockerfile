@@ -1,8 +1,7 @@
 FROM python:3.9.5-slim
 
-ADD requirements.txt /
 ADD migrations /migrations
-COPY dist/mrmat-python-api-flask-*.tar.gz /
+COPY dist/mrmat_python_api_flask-*.whl /
 RUN \
     groupadd -g 1000 flask \
     && useradd -u 1000 -g 1000 -c "Flask User" -M flask \
@@ -15,14 +14,14 @@ ENV FLASK_APP=mrmat_python_api_flask
 RUN \
     python -mvenv /app/venv \
     && . /app/venv/bin/activate \
-    && pip install gunicorn wheel \
-    && pip install -r /requirements.txt \
-    && pip install /mrmat-python-api-flask-*.tar.gz \
+    && python -m pip install --no-cache-dir -U pip setuptools wheel \
+    && pip install --no-cache-dir gunicorn \
+    && pip install --no-cache-dir /mrmat_python_api_flask-*.whl \
     && flask db upgrade
 
 USER 0:0
 RUN \
-    rm -rf /requirements.txt /mrmat-python-api-flask-*.tar.gz /migrations
+    rm -rf /mrmat_python_api_flask-*.whl /migrations
 
 EXPOSE 8080
 USER 1000:1000

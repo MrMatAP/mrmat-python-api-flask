@@ -246,4 +246,5 @@ dmypy.json
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains,python
 
-mrmat_python_api_flask/static
+var/terraform/.terraform/
+var/terraform/.terraform.lock.hcl

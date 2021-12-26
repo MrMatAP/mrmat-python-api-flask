@@ -14,13 +14,42 @@ This variant of a Python Flask API is code-first and using native Flask
 * API body serialisation using Flask-Marshmallow
 * OIDC Authentication using Flask-OIDC
 * No TLS, because this is intended to run behind a reverse proxy
-* Healthz
+* Healthz API
 
 ## How to build this
 
-Use the standard `python ./setup.py install` to build. By default, the version built will be `0.0.0.dev0`,
-unless the `MRMAT_VERSION` environment variable is set by the build orchestrator (e.g. GitHub Actions). The
-version and whether a release is built is consequently controlled exlusively by the build orchestrator.
+Building a wheel boils down to this (in bash or Powershell):
+
+```bash
+$ pip install -r requirements.txt  # Manually install dependencies (see note in requirements.txt!)
+$ export PYTHONPATH=`pwd`                # In order to find the build-time ci module
+$ export MRMAT_VERSION=1.0.27            # Optional: To influence the version. Normally calculated and set by CI
+$ python -m build -n                     # Use -n in an interactive, virtual environment
+$ ls dist/
+mrmat_python_api_flask-1.0.27.dev0-py3-none-any.whl
+```
+
+```powershell
+PS> pip install -r build-requirements.txt     # Manually install dependencies (see note in requirements.txt!)
+PS> $Env:PYTHONPATH=(pwd)                     # In order to find the build-time ci module
+PS> $Env:MRMAT_VERSION = "1.0.27"             # Optional: To influence the version. Normally calculated and set by CI
+PS> python -m build
+```
+
+This project uses the [PEP517 build mechanism](https://www.python.org/dev/peps/pep-0517/), but with a twist so CI is in
+control over the generation of the micro version number. In our case, CI is GitHub Actions, which has the top-level
+environment variables `MAJOR` and `MINOR`. These two are intended to be infrequently updated manually if and when
+it is needed. The micro version is automatically set by the `GITHUB_RUN_NUMBER` which increases for every build
+we do. The `MRMAT_VERSION` environment variable is a concatenation of these three. If the build is via a PR onto
+main then this is the release version. Otherwise `.dev0` is appended to the version.
+
+If you are building locally, then your version will **always** be `0.0.0.dev0` (unless you explicitly set the
+`MRMAT_VERSION` environment variable to something different).
+
+It is necessary for setup.cfg to figure out whether and what `MRMAT_VERSION` is set to. Since this is no longer
+an executable in PEP517, we tell it to use the `ci` module for doing so. The `ci` module simply picks up `MRMAT_VERSION`
+from the environment, no more and the module is explicitly ignored from packaging. However, you must ensure that
+the top-level `ci` module is on the Python path as you build (hence the setup above).
 
 ## How to run this
 
@@ -35,8 +64,6 @@ You have the choice of running this
 To run this directly:
 
 ```shell
-$ pip install -r requirements.txt
-$ python ./setup.py install
 $ mrmat-python-api-flask -h
 usage: mrmat-python-api-flask [-h] [-d] [--host HOST] [--port PORT] [--instance-path INSTANCE_PATH] [--db DB]
                               --oidc-secrets OIDC_SECRETS
