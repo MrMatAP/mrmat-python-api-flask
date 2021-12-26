@@ -98,7 +98,7 @@ def oidc_check_auth(config: Dict, discovery: Dict, device_auth: Dict):
                 raise ClientException(msg=body['error_description'])
         elif resp.status_code == 200:
             return resp.json()
-        log.info('Waiting for %d seconds', wait)
+        log.info('Waiting for %s seconds', wait)
         sleep(wait)
 
 
@@ -200,7 +200,7 @@ def main(argv=None) -> int:
             raise ClientException(msg='No expires_in in device_auth')
 
         # Adding the user code to the URL is convenient, but not as secure as it could be
-        log.info('Please visit %s within %d seconds and enter code %s. Or just visit %s',
+        log.info('Please visit %s within %s seconds and enter code %s. Or just visit %s',
                  device_auth['verification_uri'],
                  device_auth['expires_in'],
                  device_auth['user_code'],
@@ -214,7 +214,7 @@ def main(argv=None) -> int:
 
         resp = requests.get(f'http://{args.host}:{args.port}/api/greeting/v3/',
                             headers={'Authorization': f'Bearer {auth["id_token"]}'})
-        log.info('Status Code: %d', resp.status_code)
+        log.info('Status Code: %s', resp.status_code)
         log.info(resp.content)
 
         return 0

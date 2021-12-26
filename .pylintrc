@@ -342,9 +342,6 @@ redefining-builtins-modules=six,six.moves,past.builtins,future.builtins,functool
 # function parameter format
 logging-modules=logging,absl.logging,tensorflow.io.logging
 
-# MrMat - We like f-strings for logging
-logging-format-style=new
-
 
 [SIMILARITIES]
 
