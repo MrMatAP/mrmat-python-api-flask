@@ -26,6 +26,7 @@
 import sys
 import os
 import logging
+import secrets
 import importlib.metadata
 
 from rich.console import Console
@@ -75,8 +76,6 @@ def create_app(config_override=None, instance_path=None):
     #
     # Set configuration defaults. If a config file is present then load it. If we have overrides, apply them
 
-    # TODO
-    #app.config.setdefault('SECRET_KEY', 'JFg4K1l5vVmusHmI0cNAFg')
     app.config.setdefault('SQLALCHEMY_DATABASE_URI',
                           'sqlite+pysqlite:///' + os.path.join(app.instance_path, 'mrmat-python-api-flask.sqlite'))
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
@@ -86,6 +85,8 @@ def create_app(config_override=None, instance_path=None):
         app.config.from_json(os.path.expanduser(os.environ['FLASK_CONFIG']))
     if config_override is not None:
         app.config.from_mapping(config_override)
+    if app.config['SECRET_KEY'] is None:
+        app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 
     #
     # Create the instance folder if it does not exist
