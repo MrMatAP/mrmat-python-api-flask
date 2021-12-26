@@ -98,6 +98,7 @@ def oidc_check_auth(config: Dict, discovery: Dict, device_auth: Dict):
                 raise ClientException(msg=body['error_description'])
         elif resp.status_code == 200:
             return resp.json()
+        log.info('Waiting for %d seconds', wait)
         sleep(wait)
 
 
@@ -116,13 +117,25 @@ def parse_args(argv: List[str]) -> Optional[Namespace]:
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet', help='Silent Operation')
     parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='Debug')
 
+    parser.add_argument('--host',
+                        dest='host',
+                        required=False,
+                        default='localhost',
+                        help='Host interface to connect to')
+    parser.add_argument('--port',
+                        dest='port',
+                        required=False,
+                        default=8080,
+                        help='Port to connect to')
+
     config_group_file = parser.add_argument_group(title='File Configuration',
                                                   description='Configure the client via a config file')
     config_group_file.add_argument('--config', '-c',
                                    dest='config',
                                    required=False,
-                                   default=os.path.join(os.environ['HOME'], 'etc',
-                                                        'mrmat-python-api-flask-client.json'),
+                                   default=os.path.expanduser(os.path.join('~',
+                                                                           'etc',
+                                                                           'mrmat-python-api-flask-client.json')),
                                    help='Path to the configuration file for the flask client')
 
     config_group_manual = parser.add_argument_group(title='Manual Configuration',
@@ -187,7 +200,7 @@ def main(argv=None) -> int:
             raise ClientException(msg='No expires_in in device_auth')
 
         # Adding the user code to the URL is convenient, but not as secure as it could be
-        log.info('Please visit {} within {} seconds and enter code {}. Or just visit {}',
+        log.info('Please visit %s within %d seconds and enter code %s. Or just visit %s',
                  device_auth['verification_uri'],
                  device_auth['expires_in'],
                  device_auth['user_code'],
@@ -199,9 +212,9 @@ def main(argv=None) -> int:
         #
         # We're using requests directly here because requests_oauthlib doesn't support device code flow directly
 
-        resp = requests.get('http://127.0.0.1:5000/api/greeting/v3/',
+        resp = requests.get(f'http://{args.host}:{args.port}/api/greeting/v3/',
                             headers={'Authorization': f'Bearer {auth["id_token"]}'})
-        log.info('Status Code: {}', resp.status_code)
+        log.info('Status Code: %d', resp.status_code)
         log.info(resp.content)
 
         return 0
