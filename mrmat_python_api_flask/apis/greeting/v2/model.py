@@ -49,7 +49,7 @@ class GreetingV2Output(ma.Schema):
         required=True,
         dump_only=True,
         metadata={
-            'description': 'The message returned'
+            'description': 'A greeting message'
         }
     )
 
