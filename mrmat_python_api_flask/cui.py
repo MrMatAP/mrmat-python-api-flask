@@ -53,11 +53,11 @@ def main() -> int:
                         required=False,
                         default=None,
                         help='Fully qualified path to instance directory')
-    parser.add_argument('--db',
-                        dest='db',
+    parser.add_argument('--dsn',
+                        dest='dsn',
                         required=False,
                         default=None,
-                        help='Database URI')
+                        help='Database DSN')
     parser.add_argument('--oidc-secrets',
                         dest='oidc_secrets',
                         required=False,
@@ -68,8 +68,8 @@ def main() -> int:
     overrides = {'DEBUG': args.debug}
     if args.oidc_secrets is not None:
         overrides['OIDC_CLIENT_SECRETS'] = args.oidc_secrets
-    if args.db is not None:
-        overrides['SQLALCHEMY_DATABASE_URI'] = args.db
+    if args.dsn is not None:
+        overrides['SQLALCHEMY_DATABASE_URI'] = args.dsn
 
     app = create_app(config_override=overrides, instance_path=args.instance_path)
     with app.app_context():
