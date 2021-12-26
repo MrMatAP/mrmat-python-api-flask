@@ -20,17 +20,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import pytest
+"""Pluggable blueprint of the Health API
+"""
 
-from flask import Response
-
-
-@pytest.mark.usefixtures('no_test_infrastructure')
-class TestWithoutInfrastructure:
-
-    def test_greeting_v1(self, no_test_infrastructure):
-        with no_test_infrastructure.app_client() as client:
-            rv: Response = client.get('/api/greeting/v1/')
-            json_body = rv.get_json()
-            assert 'message' in json_body
-            assert json_body['message'] == 'Hello World'
+from .model import HealthzOutput            # noqa: F401
+from .api import bp as api_healthz          # noqa: F401

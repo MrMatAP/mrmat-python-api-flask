@@ -25,8 +25,12 @@
 
 import sys
 import os
-import pkg_resources
-from logging.config import dictConfig
+import logging
+import secrets
+import importlib.metadata
+
+from rich.console import Console
+from rich.logging import RichHandler
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -34,33 +38,23 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
 
-__version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
+logging.basicConfig(level='INFO',
+                    handlers=[RichHandler(rich_tracebacks=True,
+                                          show_path=False,
+                                          omit_repeated_times=False)])
+log = logging.getLogger(__name__)
+console = Console()
+
+try:
+    __version__ = importlib.metadata.version('mrmat-python-api-flask')
+except importlib.metadata.PackageNotFoundError:
+    # You have not actually installed the wheel yet. We may be within CI so pick that version or fall back
+    __version__ = os.environ.get('MRMAT_VERSION', '0.0.0.dev0')
+
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 oidc = OpenIDConnect()
-
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s: %(message)s',
-    }},
-    'handlers': {
-        'wsgi': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://flask.logging.wsgi_errors_stream',
-            'formatter': 'default'
-        }
-    },
-    'root': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    },
-    'mrmat_python_api_flask': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    }
-})
 
 
 def create_app(config_override=None, instance_path=None):
@@ -82,7 +76,6 @@ def create_app(config_override=None, instance_path=None):
     #
     # Set configuration defaults. If a config file is present then load it. If we have overrides, apply them
 
-    app.config.setdefault('SECRET_KEY', os.urandom(16))
     app.config.setdefault('SQLALCHEMY_DATABASE_URI',
                           'sqlite+pysqlite:///' + os.path.join(app.instance_path, 'mrmat-python-api-flask.sqlite'))
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
@@ -92,6 +85,8 @@ def create_app(config_override=None, instance_path=None):
         app.config.from_json(os.path.expanduser(os.environ['FLASK_CONFIG']))
     if config_override is not None:
         app.config.from_mapping(config_override)
+    if app.config['SECRET_KEY'] is None:
+        app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 
     #
     # Create the instance folder if it does not exist
@@ -109,7 +104,6 @@ def create_app(config_override=None, instance_path=None):
     # When using Flask-SQLAlchemy, there is no need to explicitly import DAO classes because they themselves
     # inherit from the SQLAlchemy model
 
-    global db, ma, migrate
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
@@ -121,7 +115,7 @@ def create_app(config_override=None, instance_path=None):
     #
     # Import and register our APIs here
 
-    from mrmat_python_api_flask.apis.healthz import bp as api_healthz  # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.healthz import api_healthz          # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v3 import api_greeting_v3  # pylint: disable=import-outside-toplevel

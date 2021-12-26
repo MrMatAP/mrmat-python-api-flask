@@ -20,12 +20,17 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import pytest
+
 from flask import Response
-from flask.testing import FlaskClient
 
 
-def test_healthz(client: FlaskClient):
-    rv: Response = client.get('/healthz/')
-    json_body = rv.get_json()
-    assert 'status' in json_body
-    assert json_body['status'] == 'OK'
+@pytest.mark.usefixtures('no_test_infrastructure')
+class TestWithoutInfrastructure:
+
+    def test_healthz(self, no_test_infrastructure):
+        with no_test_infrastructure.app_client() as client:
+            rv: Response = client.get('/healthz/')
+            json_body = rv.get_json()
+            assert 'status' in json_body
+            assert json_body['status'] == 'OK'

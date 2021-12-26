@@ -20,26 +20,38 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import os
-from setuptools import setup, find_packages
+"""Greeting API v2 Model"""
 
-setup(
-    name='mrmat-python-api-flask',
-    version=os.environ['MRMAT_VERSION'] if 'MRMAT_VERSION' in os.environ else '0.0.0.dev0',
-    packages=find_packages(),
-    license='MIT',
-    author='MrMat',
-    author_email='imfeldma+9jqerw@gmail.com',
-    description='Boilerplate for a Python Flask API',
+from marshmallow import fields
 
-    setup_requires=['flake8'],
-    zip_safe=False,
-    include_package_data=True,
+from mrmat_python_api_flask import ma
 
-    entry_points={
-        'console_scripts': [
-            'mrmat-python-api-flask = mrmat_python_api_flask.cli:main',
-            'mrmat-python-api-flask-client = mrmat_python_api_flask.client:main'
-        ]
-    }
-)
+
+class GreetingV2Input(ma.Schema):
+    class Meta:
+        fields: ('name',)
+
+    name = fields.Str(
+        required=False,
+        load_only=True,
+        missing='Stranger',
+        metadata={
+            'description': 'The name to greet'
+        }
+    )
+
+
+class GreetingV2Output(ma.Schema):
+    class Meta:
+        fields = ('message',)
+
+    message = fields.Str(
+        required=True,
+        dump_only=True,
+        metadata={
+            'description': 'The message returned'
+        }
+    )
+
+
+greeting_v2_output = GreetingV2Output()

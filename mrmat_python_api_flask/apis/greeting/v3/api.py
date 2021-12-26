@@ -33,4 +33,4 @@ bp = Blueprint('greeting_v3', __name__)
 @bp.route('/', methods=['GET'])
 @oidc.accept_token(require_token=True)
 def get():
-    return {'message': f'Hello {g.oidc_token_info["preferred_username"]}'}, 200
+    return {'message': f'Hello {g.oidc_token_info["username"]}'}, 200

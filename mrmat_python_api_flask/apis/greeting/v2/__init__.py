@@ -23,4 +23,5 @@
 """Pluggable blueprint of the Greeting API v2
 """
 
-from .api import bp as api_greeting_v2       # noqa: F401
+from .model import GreetingV2Output, GreetingV2Input          # noqa: F401
+from .api import bp as api_greeting_v2                        # noqa: F401

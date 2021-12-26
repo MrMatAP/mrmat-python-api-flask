@@ -22,12 +22,20 @@
 
 """Blueprint for the Greeting API in V1
 """
+from flask.views import MethodView
+from flask_smorest import Blueprint
+from .model import greeting_v1_output, GreetingV1Output
 
-from flask import Blueprint
+bp = Blueprint('greeting_v1',
+               __name__,
+               description='Greeting V1 API')
 
-bp = Blueprint('greeting_v1', __name__)
 
+@bp.route('/')
+class GreetingV1(MethodView):
 
-@bp.route('/', methods=['GET'])
-def get():
-    return {'message': 'Hello World'}, 200
+    @bp.response(200, GreetingV1Output)
+    def get(self):
+        """Get a Hello World message
+        """
+        return greeting_v1_output.dump({'message': 'Hello World'}), 200

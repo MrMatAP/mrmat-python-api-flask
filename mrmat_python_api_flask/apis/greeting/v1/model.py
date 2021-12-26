@@ -20,17 +20,24 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import pytest
+"""Greeting API v1 Model"""
 
-from flask import Response
+from marshmallow import fields
+
+from mrmat_python_api_flask import ma
 
 
-@pytest.mark.usefixtures('no_test_infrastructure')
-class TestWithoutInfrastructure:
+class GreetingV1Output(ma.Schema):
+    class Meta:
+        fields = ('message',)
 
-    def test_greeting_v1(self, no_test_infrastructure):
-        with no_test_infrastructure.app_client() as client:
-            rv: Response = client.get('/api/greeting/v1/')
-            json_body = rv.get_json()
-            assert 'message' in json_body
-            assert json_body['message'] == 'Hello World'
+    message = fields.Str(
+        required=True,
+        dump_only=True,
+        metadata={
+            'description': 'The message returned'
+        }
+    )
+
+
+greeting_v1_output = GreetingV1Output()

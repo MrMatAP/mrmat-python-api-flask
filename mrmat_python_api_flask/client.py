@@ -29,11 +29,9 @@ import json
 from time import sleep
 from argparse import ArgumentParser, Namespace
 from typing import List, Optional, Dict
-import cli_ui
-from halo import Halo
 import requests
 
-from mrmat_python_api_flask import __version__
+from mrmat_python_api_flask import __version__, log
 
 
 class ClientException(Exception):
@@ -76,7 +74,6 @@ def oidc_device_auth(config: Dict, discovery: Dict) -> Dict:
     return data
 
 
-@Halo(text='Checking authentication')
 def oidc_check_auth(config: Dict, discovery: Dict, device_auth: Dict):
     wait = 5
     stop = False
@@ -101,6 +98,7 @@ def oidc_check_auth(config: Dict, discovery: Dict, device_auth: Dict):
                 raise ClientException(msg=body['error_description'])
         elif resp.status_code == 200:
             return resp.json()
+        log.info('Waiting for %s seconds', wait)
         sleep(wait)
 
 
@@ -119,13 +117,25 @@ def parse_args(argv: List[str]) -> Optional[Namespace]:
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet', help='Silent Operation')
     parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='Debug')
 
+    parser.add_argument('--host',
+                        dest='host',
+                        required=False,
+                        default='localhost',
+                        help='Host interface to connect to')
+    parser.add_argument('--port',
+                        dest='port',
+                        required=False,
+                        default=8080,
+                        help='Port to connect to')
+
     config_group_file = parser.add_argument_group(title='File Configuration',
                                                   description='Configure the client via a config file')
     config_group_file.add_argument('--config', '-c',
                                    dest='config',
                                    required=False,
-                                   default=os.path.join(os.environ['HOME'], 'etc',
-                                                        'mrmat-python-api-flask-client.json'),
+                                   default=os.path.expanduser(os.path.join('~',
+                                                                           'etc',
+                                                                           'mrmat-python-api-flask-client.json')),
                                    help='Path to the configuration file for the flask client')
 
     config_group_manual = parser.add_argument_group(title='Manual Configuration',
@@ -159,14 +169,13 @@ def main(argv=None) -> int:
     args = parse_args(argv if argv is not None else sys.argv[1:])
     if args is None:
         return 0
-    cli_ui.setup(verbose=args.debug, quiet=args.quiet, timestamp=False)
 
     #
     # Read from the config file by default, but allow overrides via the CLI
 
     config = {}
     if os.path.exists(os.path.expanduser(args.config)):
-        with open(os.path.expanduser(args.config)) as c:
+        with open(os.path.expanduser(args.config), encoding='UTF-8') as c:
             config = json.load(c)
     config_override = vars(args)
     for key in config_override.keys() & config_override.keys():
@@ -191,23 +200,26 @@ def main(argv=None) -> int:
             raise ClientException(msg='No expires_in in device_auth')
 
         # Adding the user code to the URL is convenient, but not as secure as it could be
-        cli_ui.info(f'Please visit {device_auth["verification_uri"]} within {device_auth["expires_in"]} seconds and '
-                    f'enter code {device_auth["user_code"]}. Or just visit {device_auth["verification_uri_complete"]}')
+        log.info('Please visit %s within %s seconds and enter code %s. Or just visit %s',
+                 device_auth['verification_uri'],
+                 device_auth['expires_in'],
+                 device_auth['user_code'],
+                 device_auth['verification_uri_complete'])
 
         auth = oidc_check_auth(config, discovery, device_auth)
-        cli_ui.info('Authenticated')
+        log.info('Authenticated')
 
         #
         # We're using requests directly here because requests_oauthlib doesn't support device code flow directly
 
-        resp = requests.get('http://127.0.0.1:5000/api/greeting/v3/',
+        resp = requests.get(f'http://{args.host}:{args.port}/api/greeting/v3/',
                             headers={'Authorization': f'Bearer {auth["id_token"]}'})
-        cli_ui.info(f'Status Code: {resp.status_code}')
-        cli_ui.info(resp.content)
+        log.info('Status Code: %s', resp.status_code)
+        log.info(resp.content)
 
         return 0
     except ClientException as ce:
-        cli_ui.error(ce.msg)
+        log.error(ce.msg)
         return ce.exit_code
 
 

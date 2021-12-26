@@ -20,17 +20,21 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import pytest
+"""Blueprint for the Healthz API
+"""
 
-from flask import Response
+from flask.views import MethodView
+from flask_smorest import Blueprint
+from .model import HealthzOutput, healthz_output
+
+bp = Blueprint('healthz',
+               __name__,
+               description='Health API')
 
 
-@pytest.mark.usefixtures('no_test_infrastructure')
-class TestWithoutInfrastructure:
+@bp.route('/')
+class Healthz(MethodView):
 
-    def test_greeting_v1(self, no_test_infrastructure):
-        with no_test_infrastructure.app_client() as client:
-            rv: Response = client.get('/api/greeting/v1/')
-            json_body = rv.get_json()
-            assert 'message' in json_body
-            assert json_body['message'] == 'Hello World'
+    @bp.response(200, HealthzOutput)
+    def get(self):
+        return healthz_output.dump({'status': 'OK'}), 200

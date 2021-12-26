@@ -35,7 +35,7 @@ class ResourceAPIClient:
         self.client = client
         self.token = token
         if token is not None:
-            self._headers = {'Authorization': f'Bearer {token["access_token"]}'}
+            self._headers = {'Authorization': f'Bearer {token}'}
 
     def get_all(self) -> Tuple:
         resp: Response = self.client.get('/api/resource/v1/', headers=self._headers)

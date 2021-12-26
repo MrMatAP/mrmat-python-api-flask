@@ -20,17 +20,23 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import pytest
+"""Healthz API Model"""
 
-from flask import Response
+from marshmallow import fields
+
+from mrmat_python_api_flask import ma
 
 
-@pytest.mark.usefixtures('no_test_infrastructure')
-class TestWithoutInfrastructure:
+class HealthzOutput(ma.Schema):
+    class Meta:
+        fields = ('status',)
 
-    def test_greeting_v1(self, no_test_infrastructure):
-        with no_test_infrastructure.app_client() as client:
-            rv: Response = client.get('/api/greeting/v1/')
-            json_body = rv.get_json()
-            assert 'message' in json_body
-            assert json_body['message'] == 'Hello World'
+    status = fields.Str(
+        required=True,
+        dump_only=True,
+        metadata={
+            'description': 'An indication of application health'
+        })
+
+
+healthz_output = HealthzOutput()
