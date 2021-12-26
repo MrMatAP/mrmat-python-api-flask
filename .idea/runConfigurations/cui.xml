@@ -14,7 +14,7 @@
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="mrmat_python_api_flask.cui" />
-    <option name="PARAMETERS" value="--instance-path $USER_HOME$/build/api-flask --port 5000 --oidc-secrets $USER_HOME$/etc/mrmat-python-api-flask.json -d" />
+    <option name="PARAMETERS" value="--instance-path $USER_HOME$/build/api-flask --port 8090 --oidc-secrets $USER_HOME$/etc/mpaf-oidc.json --dsn postgresql://mpaf:mpaf@localhost:5432/localdb" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="true" />
