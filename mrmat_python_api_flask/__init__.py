@@ -114,7 +114,7 @@ def create_app(config_override=None, instance_path=None):
     #
     # Import and register our APIs here
 
-    from mrmat_python_api_flask.apis.healthz import bp as api_healthz  # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.healthz import api_healthz          # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v3 import api_greeting_v3  # pylint: disable=import-outside-toplevel
