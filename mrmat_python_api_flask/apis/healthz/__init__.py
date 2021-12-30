@@ -23,5 +23,4 @@
 """Pluggable blueprint of the Health API
 """
 
-from .model import HealthzOutput            # noqa: F401
 from .api import bp as api_healthz          # noqa: F401

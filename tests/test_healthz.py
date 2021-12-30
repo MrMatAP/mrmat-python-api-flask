@@ -32,5 +32,6 @@ class TestWithoutInfrastructure:
         with no_test_infrastructure.app_client() as client:
             rv: Response = client.get('/healthz/')
             json_body = rv.get_json()
-            assert 'status' in json_body
-            assert json_body['status'] == 'OK'
+            assert rv.status_code == 200
+            assert json_body['code'] == 200
+            assert json_body['message'] == 'OK'

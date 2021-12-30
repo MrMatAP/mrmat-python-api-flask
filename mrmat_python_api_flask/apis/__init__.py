@@ -19,3 +19,33 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
+
+"""
+Code that can be re-used by all APIs
+"""
+
+from marshmallow import fields
+
+from mrmat_python_api_flask import ma
+
+
+class StatusOutputSchema(ma.Schema):
+    class Meta:
+        fields = ('code', 'message')
+
+    code = fields.Int(
+        default=0,
+        metadata={
+            'description': 'An integer status code which will typically match the HTTP status code'
+        }
+    )
+    message = fields.Str(
+        required=True,
+        dump_only=True,
+        metadata={
+            'description': 'A human-readable message'
+        }
+    )
+
+
+status_output = StatusOutputSchema()

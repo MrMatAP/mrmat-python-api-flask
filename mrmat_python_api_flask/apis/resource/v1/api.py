@@ -30,6 +30,7 @@ from flask import Blueprint, request, g, current_app
 from marshmallow import ValidationError
 
 from mrmat_python_api_flask import db, oidc
+from mrmat_python_api_flask.apis import status_output
 from .model import Owner, Resource, resource_schema, resources_schema
 
 bp = Blueprint('resource_v1', __name__)
@@ -57,7 +58,7 @@ def get_one(i: int):
     logger.info(f'Called by {client_id} for {name}')
     resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
-        return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
+        return status_output.dump(code=404, message='Unable to find a resource with this id'), 404
     return resource_schema.dump(resource), 200
 
 
@@ -69,7 +70,7 @@ def create():
     try:
         json_body = request.get_json()
         if not json_body:
-            return {'message': 'No input data provided'}, 400
+            return status_output.dump(code=400, message='Missing input data'), 400
         body = resource_schema.load(request.get_json())
     except ValidationError as ve:
         return ve.messages, 422
@@ -81,8 +82,8 @@ def create():
         .filter(Resource.name == body['name'] and Resource.owner.client_id == client_id)\
         .one_or_none()
     if resource is not None:
-        return {'status': 409,
-                'message': f'A resource with the same name and owner already exists with id {resource.id}'}, 409
+        # TODO: Allow turning this off because it can be used as an enumeration attack
+        return status_output.dump(code=409, message='This resource already exists'), 409
 
     #
     # Look up the owner and create one if necessary
@@ -107,9 +108,9 @@ def modify(i: int):
 
     resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
-        return {'status': 404, 'message': 'Unable to find requested resource'}, 404
+        return status_output.dump(code=404, message='Unable to find a resource with this id'), 404
     if resource.owner.client_id != client_id:
-        return {'status': 401, 'message': 'You do not own this resource'}, 401
+        return status_output.dump(code=401, message='You are not authorised to modify this resource'), 401
     resource.name = body['name']
 
     db.session.add(resource)
@@ -125,9 +126,10 @@ def remove(i: int):
 
     resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
-        return {'status': 410, 'message': 'The requested resource is permanently deleted'}, 410
+        # TODO: Allow turning this off because it can be used as an enumeration attack
+        return status_output.dump(code=410, message='The resource is gone'), 410
     if resource.owner.client_id != client_id:
-        return {'status': 401, 'message': 'You do not own this resource'}, 401
+        return status_output.dump(code=401, message='You are not authorised to remove this resource'), 401
 
     db.session.delete(resource)
     db.session.commit()

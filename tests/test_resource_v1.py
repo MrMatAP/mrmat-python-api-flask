@@ -63,8 +63,8 @@ class TestWithLocalInfrastructure:
 
                 (resp, resp_body) = rac.remove(resource_id)
                 assert resp.status_code == 410
+                assert resp_body['code'] == 410
                 assert resp_body['message'] == 'The requested resource is permanently deleted'
-                assert resp_body['status'] == 410
 
     def test_insufficient_scope(self, tmpdir, local_test_infrastructure):
         with local_test_infrastructure.app_client(tmpdir) as client:
@@ -81,3 +81,46 @@ class TestWithLocalInfrastructure:
                 (resp, resp_body) = rac.remove(1)
                 assert resp.status_code == 401
                 assert resp_body is None
+
+    def test_duplicate_creation_fails(self, tmpdir, local_test_infrastructure):
+        with local_test_infrastructure.app_client(tmpdir) as client:
+            with local_test_infrastructure.user_token(scopes=['mpaf-read', 'mpaf-write']) as user_token:
+                rac = ResourceAPIClient(client, token=user_token['access_token'])
+
+                resource_name = f'Test Resource {datetime.utcnow()}'
+                (resp, resp_body) = rac.create(name=resource_name)
+                assert resp.status_code == 201
+                assert resp_body['id'] is not None
+                assert resp_body['name'] == resource_name
+
+                (resp, resp_body) = rac.create(name=resource_name)
+                assert resp.status_code == 409
+                assert resp_body['code'] == 409
+                assert resp_body['message'] == 'This resource already exists'
+
+    def test_ownership_is_maintained(self, tmpdir, local_test_infrastructure):
+        with local_test_infrastructure.app_client(tmpdir) as client, \
+             local_test_infrastructure.user_token(user_id='test-user1', scopes=['mpaf-read', 'mpaf-write']) as token1, \
+             local_test_infrastructure.user_token(user_id='test-user2', scopes=['mpaf-read', 'mpaf-write']) as token2:
+
+            rac1 = ResourceAPIClient(client, token=token1['access_token'])
+            rac2 = ResourceAPIClient(client, token=token2['access_token'])
+
+            resource_name = f'Test Resource {datetime.utcnow()}'
+            (resp, resp_body) = rac1.create(name=resource_name)
+            assert resp.status_code == 201
+
+            (resp, resp_body) = rac2.create(name=resource_name)
+            assert resp.status_code == 201
+            user2_resource = resp_body['id']
+
+            (resp, resp_body) = rac1.modify(user2_resource, name='Test')
+            assert resp.status_code == 401
+            assert resp_body['code'] == 401
+            assert resp_body['message'] == 'You are not authorised to modify this resource'
+
+            (resp, resp_body) = rac1.remove(user2_resource)
+            assert resp.status_code == 401
+            assert resp_body['code'] == 401
+            assert resp_body['message'] == 'You are not authorised to remove this resource'
+

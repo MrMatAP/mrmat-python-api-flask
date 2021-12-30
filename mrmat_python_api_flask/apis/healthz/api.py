@@ -23,18 +23,16 @@
 """Blueprint for the Healthz API
 """
 
-from flask.views import MethodView
-from flask_smorest import Blueprint
-from .model import HealthzOutput, healthz_output
+#from flask_smorest import Blueprint
+from flask import Blueprint
 
-bp = Blueprint('healthz',
-               __name__,
-               description='Health API')
+from mrmat_python_api_flask.apis import status_output
+
+#bp = Blueprint('healthz', __name__, description='Health API')
+bp = Blueprint('healthz', __name__)
 
 
 @bp.route('/')
-class Healthz(MethodView):
-
-    @bp.response(200, HealthzOutput)
-    def get(self):
-        return healthz_output.dump({'status': 'OK'}), 200
+#@bp.response(200, StatusOutputSchema)
+def get():
+    return status_output.dump(status=200, message='OK'), 200
