@@ -238,8 +238,8 @@ class LocalTestInfrastructure(object):
     @contextlib.contextmanager
     def app(self,
             tmpdir,
-            pg_role: str = 'mpaf',
-            pg_password: str = 'mpaf',
+            pg_role: str = 'mpaf-test',
+            pg_password: str = 'mpaf-test',
             pg_schema: str = 'mpaf-test',
             drop_finally: bool = False):
         with self.app_dsn(role=pg_role, password=pg_password, schema=pg_schema, drop_finally=drop_finally) as dsn, \
@@ -262,8 +262,8 @@ class LocalTestInfrastructure(object):
 
     @contextlib.contextmanager
     def user_token(self,
-                   user_id: str = 'test-user',
-                   user_password: str = 'test',
+                   user_id: str = 'mpaf-test-user',
+                   user_password: str = 'mpaf-test-user',
                    scopes: List[str] = None,
                    drop_finally: bool = False):
         try:
