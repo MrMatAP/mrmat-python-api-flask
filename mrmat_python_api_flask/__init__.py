@@ -83,10 +83,13 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('OIDC_RESOURCE_SERVER_ONLY', True)
     app_config_file = os.path.expanduser(os.environ.get('APP_CONFIG', '~/etc/mrmat-python-api-flask.json'))
     if os.path.exists(app_config_file):
+        app.logger.info(f'Applying configuration from {app_config_file}')
         app.config.from_json(app_config_file)
     if config_override is not None:
+        app.logger.info(f'Overriding configuration from {type(config_override)}')
         app.config.from_mapping(config_override)
     if app.config['SECRET_KEY'] is None:
+        app.logger.warning(f'Generating new secret key')
         app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 
     #
