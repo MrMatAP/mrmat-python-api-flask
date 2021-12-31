@@ -81,8 +81,9 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
     app.config.setdefault('OIDC_USER_INFO_ENABLED', True)
     app.config.setdefault('OIDC_RESOURCE_SERVER_ONLY', True)
-    if 'FLASK_CONFIG' in os.environ and os.path.exists(os.path.expanduser(os.environ['FLASK_CONFIG'])):
-        app.config.from_json(os.path.expanduser(os.environ['FLASK_CONFIG']))
+    app_config_file = os.path.expanduser(os.environ.get('APP_CONFIG', '~/etc/mrmat-python-api-flask.json'))
+    if os.path.exists(app_config_file):
+        app.config.from_json(app_config_file)
     if config_override is not None:
         app.config.from_mapping(config_override)
     if app.config['SECRET_KEY'] is None:
