@@ -86,7 +86,8 @@ def create_app(config_override=None, instance_path=None):
         app.logger.info(f'Applying configuration from {app_config_file}')
         app.config.from_json(app_config_file)
     if config_override is not None:
-        app.logger.info(f'Overriding configuration from {type(config_override)}')
+        for override in config_override:
+            app.logger.info(f'Overriding configuration for {override} from the command line')
         app.config.from_mapping(config_override)
     if app.config['SECRET_KEY'] is None:
         app.logger.warning('Generating new secret key')
