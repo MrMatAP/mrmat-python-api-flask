@@ -89,7 +89,7 @@ def create_app(config_override=None, instance_path=None):
         app.logger.info(f'Overriding configuration from {type(config_override)}')
         app.config.from_mapping(config_override)
     if app.config['SECRET_KEY'] is None:
-        app.logger.warning(f'Generating new secret key')
+        app.logger.warning('Generating new secret key')
         app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 
     #
