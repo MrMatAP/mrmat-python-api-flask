@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mrmat-python-api-flask (default, debug)" type="Python.FlaskServer">
+  <configuration default="false" name="mrmat-python-api-flask (no infrastructure, debug)" type="Python.FlaskServer">
     <option name="flaskDebug" value="true" />
     <module name="mrmat-python-api-flask" />
     <option name="target" value="mrmat_python_api_flask" />

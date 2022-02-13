@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="tests" type="tests" factoryName="py.test">
+  <configuration default="false" name="tests (local infrastructure)" type="tests" factoryName="py.test">
     <module name="mrmat-python-api-flask" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
