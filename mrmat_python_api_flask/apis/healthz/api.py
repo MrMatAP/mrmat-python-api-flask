@@ -20,19 +20,20 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Blueprint for the Healthz API
+"""
+Blueprint for the Healthz API
 """
 
-#from flask_smorest import Blueprint
-from flask import Blueprint
+from flask_smorest import Blueprint
+# from flask import Blueprint
 
-from mrmat_python_api_flask.apis import status_output
+from mrmat_python_api_flask.apis import status_output, StatusOutputSchema
 
-#bp = Blueprint('healthz', __name__, description='Health API')
-bp = Blueprint('healthz', __name__)
+bp = Blueprint('healthz', __name__, description='Health API')
+# bp = Blueprint('healthz', __name__)
 
 
-@bp.route('/')
-#@bp.response(200, StatusOutputSchema)
+@bp.route('/', methods=['GET'])
+@bp.response(200, StatusOutputSchema)
 def get():
-    return status_output.dump(status=200, message='OK'), 200
+    return status_output.dump(dict(code=200, message='OK')), 200
