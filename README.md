@@ -356,3 +356,6 @@ following form. The DISCOVERY_URL must point to the URL where the IdP publishes 
 ```
 
 >The client requires configuration with OIDC secrets and currently implements the Device code flow
+
+### Logging
+

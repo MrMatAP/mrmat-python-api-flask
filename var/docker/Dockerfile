@@ -25,4 +25,4 @@ RUN \
 
 EXPOSE 8080
 USER 1000:1000
-ENTRYPOINT /app/venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 'mrmat_python_api_flask:create_app()'
+ENTRYPOINT /app/venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 --error-logfile /app/instance/error.log --access-logfile /app/instance/access.log 'mrmat_python_api_flask:create_app()'

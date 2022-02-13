@@ -5,8 +5,24 @@
         <option name="imageTag" value="mrmat-python-api-flask:0.0.1" />
         <option name="containerName" value="mrmat-python-api-flask" />
         <option name="contextFolderPath" value="." />
-        <option name="publishAllPorts" value="true" />
+        <option name="portBindings">
+          <list>
+            <DockerPortBindingImpl>
+              <option name="containerPort" value="8080" />
+              <option name="hostIp" value="127.0.0.1" />
+              <option name="hostPort" value="10080" />
+            </DockerPortBindingImpl>
+          </list>
+        </option>
         <option name="sourceFilePath" value="var/docker/Dockerfile" />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/app/instance" />
+              <option name="hostPath" value="/opt/dyn/mrmat-python-api-flask" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
       </settings>
     </deployment>
     <method v="2" />
