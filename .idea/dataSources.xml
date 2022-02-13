@@ -8,11 +8,11 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/localdb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="mpaf@localdb" uuid="4875dced-5da7-4cb2-9b21-a2d07f9ddcd0">
+    <data-source source="LOCAL" name="imfeldma@prometheusdb" uuid="9cb3727e-b0a4-4fb9-a2ab-9c167911aa9c">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/localdb</jdbc-url>
+      <jdbc-url>jdbc:postgresql://prometheus.mrmat.org:5432/prometheusdb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
