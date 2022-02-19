@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mrmat-python-api-flask (prod)" type="Python.FlaskServer">
+  <configuration default="false" name="mrmat-python-api-flask (local infrastructure)" type="Python.FlaskServer">
     <option name="flaskEnv" value="production" />
     <module name="mrmat-python-api-flask" />
     <option name="target" value="mrmat_python_api_flask" />
@@ -7,7 +7,7 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="APP_CONFIG" value="$USER_HOME$/etc/mrmat-python-api-flask.json" />
+      <env name="APP_CONFIG" value="$USER_HOME$/etc/mpaf-local.json" />
       <env name="HTTPLIB2_CA_CERTS" value="$USER_HOME$/var/ca/mrmat-ca/ca.crt" />
     </envs>
     <option name="SDK_HOME" value="" />

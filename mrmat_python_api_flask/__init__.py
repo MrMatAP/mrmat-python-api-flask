@@ -36,6 +36,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
+from flask_smorest import Api
+
 
 #
 # Establish consistent logging
@@ -57,33 +59,33 @@ class RequestFormatter(logging.Formatter):
 
 
 logging.config.dictConfig({
-        'version': 1,
-        'formatters': {
-            'default': {
-                'class': 'logging.Formatter',
-                'format': '%(asctime)s %(name)-22s %(levelname)-8s %(message)s'
-            }
-        },
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-                'level': 'INFO',
-                'formatter': 'default'
-            }
-        },
-        'loggers': {
-            __name__: {
-                'level': 'INFO',
-                'handlers': ['console'],
-                'propagate': False
-            }
-        },
-        'root': {
-            'level': 'INFO',
-            'formatter': 'default',
-            'handlers': ['console']
+    'version': 1,
+    'formatters': {
+        'default': {
+            'class': 'logging.Formatter',
+            'format': '%(asctime)s %(name)-22s %(levelname)-8s %(message)s'
         }
-    })
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+            'formatter': 'default'
+        }
+    },
+    'loggers': {
+        __name__: {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False
+        }
+    },
+    'root': {
+        'level': 'INFO',
+        'formatter': 'default',
+        'handlers': ['console']
+    }
+})
 log = logging.getLogger(__name__)
 
 #
@@ -105,6 +107,7 @@ db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 oidc = OpenIDConnect()
+api = Api()
 
 
 def create_app(config_override=None, instance_path=None):
@@ -131,6 +134,13 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
     app.config.setdefault('OIDC_USER_INFO_ENABLED', True)
     app.config.setdefault('OIDC_RESOURCE_SERVER_ONLY', True)
+    app.config.setdefault('API_TITLE', 'MrMat :: Python :: API :: Flask')
+    app.config.setdefault('API_VERSION', __version__)
+    app.config.setdefault('OPENAPI_VERSION', '3.0.2')
+    app.config.setdefault('OPENAPI_URL_PREFIX', '/doc')
+    app.config.setdefault('OPENAPI_JSON_PATH', '/openapi.json')
+    app.config.setdefault('OPENAPI_SWAGGER_UI_PATH', '/swagger-ui')
+    app.config.setdefault('OPENAPI_SWAGGER_UI_URL', 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/')
     app_config_file = os.path.expanduser(os.environ.get('APP_CONFIG', '~/etc/mrmat-python-api-flask.json'))
     if os.path.exists(app_config_file):
         log.info(f'Applying configuration from {app_config_file}')
@@ -162,24 +172,34 @@ def create_app(config_override=None, instance_path=None):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
+    api.init_app(app)
     if 'OIDC_CLIENT_SECRETS' in app.config.keys():
         oidc.init_app(app)
     else:
         log.warning('Running without any authentication/authorisation')
 
     #
+    # Security Schemes
+
+    api.spec.components.security_scheme('openId', dict(
+                                            type='openIdConnect',
+                                            description='MrMat OIDC',
+                                            openIdConnectUrl='http://localhost:8080/auth/realms/master/.well-known/openid-configuration'
+                                        ))
+
+    #
     # Import and register our APIs here
 
-    from mrmat_python_api_flask.apis.healthz import api_healthz          # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.healthz import api_healthz  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v3 import api_greeting_v3  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.resource.v1 import api_resource_v1  # pylint: disable=import-outside-toplevel
-    app.register_blueprint(api_healthz, url_prefix='/healthz')
-    app.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
-    app.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
-    app.register_blueprint(api_greeting_v3, url_prefix='/api/greeting/v3')
-    app.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
+    api.register_blueprint(api_healthz, url_prefix='/healthz')
+    api.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
+    api.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
+    api.register_blueprint(api_greeting_v3, url_prefix='/api/greeting/v3')
+    api.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
 
     #
     # Postprocess the request

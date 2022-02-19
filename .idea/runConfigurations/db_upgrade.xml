@@ -7,9 +7,9 @@
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="FLASK_APP" value="mrmat_python_api_flask" />
     </envs>
-    <option name="SDK_HOME" value="/opt/dyn/python/mrmat-python-api-flask/bin/python" />
+    <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />

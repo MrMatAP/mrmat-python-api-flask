@@ -26,14 +26,15 @@
 from typing import Tuple
 
 from werkzeug.local import LocalProxy
-from flask import Blueprint, request, g, current_app
+from flask import request, g, current_app
+from flask_smorest import Blueprint
 from marshmallow import ValidationError
 
 from mrmat_python_api_flask import db, oidc
 from mrmat_python_api_flask.apis import status_output
-from .model import Owner, Resource, resource_schema, resources_schema
+from .model import Owner, Resource, ResourceSchema, OwnerSchema, resource_schema, resources_schema
 
-bp = Blueprint('resource_v1', __name__)
+bp = Blueprint('resource_v1', __name__, description='Resource V1 API')
 logger = LocalProxy(lambda: current_app.logger)
 
 
@@ -43,6 +44,10 @@ def _extract_identity() -> Tuple:
 
 
 @bp.route('/', methods=['GET'])
+@bp.doc(summary='Get all known resources',
+        description='Returns all currently known resources and their metadata',
+        security=[{'openId': ['mpaf-read']}])
+@bp.response(200, schema=ResourceSchema(many=True))
 @oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_all():
     (client_id, name) = _extract_identity()
@@ -52,6 +57,10 @@ def get_all():
 
 
 @bp.route('/<i>', methods=['GET'])
+@bp.doc(summary='Get a single resource',
+        description='Return a single resource identified by its resource id.',
+        security=[{'openId': ['mpaf-read']}])
+@bp.response(200, schema=ResourceSchema)
 @oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_one(i: int):
     (client_id, name) = _extract_identity()
@@ -63,6 +72,14 @@ def get_one(i: int):
 
 
 @bp.route('/', methods=['POST'])
+@bp.doc(summary='Create a resource',
+        description='Create a resource owned by the authenticated user',
+        security=[{'openId':['mpaf-write']}])
+@bp.arguments(ResourceSchema,
+              location='json',
+              required=True,
+              description='The resource to create')
+@bp.response(200, schema=ResourceSchema)
 @oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def create():
     (client_id, name) = _extract_identity()

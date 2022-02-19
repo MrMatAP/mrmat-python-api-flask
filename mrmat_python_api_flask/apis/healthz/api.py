@@ -25,15 +25,20 @@ Blueprint for the Healthz API
 """
 
 from flask_smorest import Blueprint
-# from flask import Blueprint
 
 from mrmat_python_api_flask.apis import status_output, StatusOutputSchema
 
 bp = Blueprint('healthz', __name__, description='Health API')
-# bp = Blueprint('healthz', __name__)
 
 
 @bp.route('/', methods=['GET'])
 @bp.response(200, StatusOutputSchema)
+@bp.doc(summary='Get an indication of application health',
+        description='Assess application health')
 def get():
+    """
+    Respond with the app health status
+    Returns:
+        A status response
+    """
     return status_output.dump(dict(code=200, message='OK')), 200

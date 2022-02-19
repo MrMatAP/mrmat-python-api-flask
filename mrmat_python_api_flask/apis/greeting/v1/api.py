@@ -35,6 +35,8 @@ log = logging.getLogger('api')
 
 @bp.route('/', methods=['GET'])
 @bp.response(200, GreetingV1Output)
+@bp.doc(summary='Get an anonymous greeting',
+        description='This version of the greeting API does not have a means to determine who you are')
 def get_greeting():
     """
     Receive a Hello World message

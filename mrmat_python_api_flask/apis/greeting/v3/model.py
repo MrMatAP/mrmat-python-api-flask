@@ -27,20 +27,6 @@ from marshmallow import fields
 from mrmat_python_api_flask import ma
 
 
-class GreetingV3Input(ma.Schema):
-    class Meta:
-        fields: ('name',)
-
-    name = fields.Str(
-        required=False,
-        load_only=True,
-        missing='Stranger',
-        metadata={
-            'description': 'The name to greet'
-        }
-    )
-
-
 class GreetingV3Output(ma.Schema):
     class Meta:
         fields = ('message',)
