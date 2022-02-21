@@ -20,6 +20,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""
+Code available to the entire testsuite
+"""
+
 import os
 import logging
 import json
@@ -45,15 +49,22 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TIException(Exception):
+    """
+    An dedicated exception raised when issues occur establishing the test infrastructure
+    """
     skip: bool = False
     msg: str = 'An unexpected exception occurred'
 
     def __init__(self, msg: str, skip: Optional[bool] = False):
+        super().__init__()
         self.skip = skip
         self.msg = msg
 
 
 class AbstractTestInfrastructure(abc.ABC):
+    """
+    An abstract class dedicated to any local test infrastructure implementation
+    """
 
     _app = None
 
@@ -67,6 +78,10 @@ class AbstractTestInfrastructure(abc.ABC):
 
 
 class NoTestInfrastructure(AbstractTestInfrastructure):
+    """
+    An implementation of test infrastructure that does not rely on anything (e.g. there is nothing
+    available except what we have right here)
+    """
 
     @contextlib.contextmanager
     def app(self):
@@ -87,7 +102,7 @@ class NoTestInfrastructure(AbstractTestInfrastructure):
 
 class LocalTestInfrastructure(object):
     """
-    A class for administration of the available test infrastructure
+    A class for administration of the available local test infrastructure
     """
 
     _ti_config_path: pathlib.Path = None
@@ -111,10 +126,10 @@ class LocalTestInfrastructure(object):
                                                  username=self._ti_config['keycloak'].get('admin_user'),
                                                  password=self._ti_config['keycloak'].get('admin_password'),
                                                  realm_name='master')
-        except psycopg2.OperationalError:
-            raise TIException(skip=True, msg='Failed to obtain an administrative connection to PG')
-        except KeycloakOperationError:
-            raise TIException(skip=True, msg='Failed to obtain an administrative connection to KeyCloak')
+        except psycopg2.OperationalError as oe:
+            raise TIException(skip=True, msg='Failed to obtain an administrative connection to PG') from oe
+        except KeycloakOperationError as koe:
+            raise TIException(skip=True, msg='Failed to obtain an administrative connection to KeyCloak') from koe
 
     @contextlib.contextmanager
     def app_dsn(self,
@@ -124,7 +139,7 @@ class LocalTestInfrastructure(object):
                 drop_finally: bool = False):
         try:
             cur = self._pg_admin.cursor()
-            cur.execute("SELECT COUNT(rolname) FROM pg_roles WHERE rolname = %(role_name)s;", {'role_name': role})
+            cur.execute('SELECT COUNT(rolname) FROM pg_roles WHERE rolname = %(role_name)s;', {'role_name': role})
             role_count = cur.fetchone()
             if role_count[0] == 0:
                 cur.execute(
@@ -145,11 +160,11 @@ class LocalTestInfrastructure(object):
             app_dsn = f"postgresql://{role}:{password}@{dsn_info['host']}:{dsn_info['port']}/{dsn_info['dbname']}"
             yield app_dsn
 
-        except psycopg2.Error:
-            raise TIException(msg=f'Failed to create role {role} on schema {schema}')
+        except psycopg2.Error as e:
+            raise TIException(msg=f'Failed to create role {role} on schema {schema}') from e
         finally:
             if drop_finally:
-                LOGGER.info(f'Dropping schema {schema} and associated role {role}')
+                LOGGER.info('Dropping schema %s and associated role %s', schema, role)
                 cur = self._pg_admin.cursor()
                 cur.execute(
                     psycopg2.sql.SQL('DROP SCHEMA {} CASCADE').format(psycopg2.sql.Identifier(schema)))
@@ -164,18 +179,17 @@ class LocalTestInfrastructure(object):
                  client_id: str = 'test-client',
                  ti_id: str = 'ti-client',
                  scopes: List[str] = None,
-                 scope: str = 'test-scope',
                  redirect_uris: List = None,
                  drop_finally: bool = False):
         try:
             if scopes is None:
                 scopes = []
-            for scope in scopes:
-                if not self._keycloak_admin.get_client_scope(scope):
+            for s in scopes:
+                if not self._keycloak_admin.get_client_scope(s):
                     self._keycloak_admin.create_client_scope({
-                        'id': scope,
-                        'name': scope,
-                        'description': f'Test {scope}',
+                        'id': s,
+                        'name': s,
+                        'description': f'Test {s}',
                         'protocol': 'openid-connect'
                     })
             if not self._keycloak_admin.get_client_id(client_id):
@@ -203,7 +217,7 @@ class LocalTestInfrastructure(object):
                                       realm_name='master',
                                       verify=True)
             discovery = keycloak.well_know()
-            with open(f'{tmpdir}/client_secrets.json', 'w') as cs:
+            with open(f'{tmpdir}/client_secrets.json', 'w', encoding='UTF-8') as cs:
                 json.dump({
                     'web': {
                         'client_id': client_id,
@@ -229,11 +243,10 @@ class LocalTestInfrastructure(object):
             LOGGER.exception(koe)
         finally:
             if drop_finally:
-                LOGGER.info(f'Deleting client_id {client_id}')
+                LOGGER.info('Deleting client_id %s', client_id)
                 self._keycloak_admin.delete_client(client_id)
-                LOGGER.info(f'Deleting client_id {ti_id}')
+                LOGGER.info('Deleting client_id %s', ti_id)
                 self._keycloak_admin.delete_client(ti_id)
-                LOGGER.info(f'Deleting scope {scope}')
 
     @contextlib.contextmanager
     def app(self,
@@ -289,7 +302,7 @@ class LocalTestInfrastructure(object):
             yield token
         finally:
             if drop_finally:
-                LOGGER.info(f'Deleting user {user_id}')
+                LOGGER.info('Deleting user %s', user_id)
                 self._keycloak_admin.delete_user(user_id)
 
 

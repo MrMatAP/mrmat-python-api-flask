@@ -20,12 +20,19 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""
+Tests for the Greeting V3 API
+"""
+
 import pytest
 from flask import Response
 
 
 @pytest.mark.usefixtures('local_test_infrastructure')
 class TestWithLocalInfrastructure:
+    """
+    Tests for the Greeting V3 API using locally available infrastructure
+    """
 
     def test_greeting_v3(self, tmpdir, local_test_infrastructure):
         with local_test_infrastructure.app_client(tmpdir) as client:

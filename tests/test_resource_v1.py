@@ -20,6 +20,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""
+Tests for the Resource API
+"""
+
 import pytest
 from datetime import datetime
 
@@ -28,6 +32,9 @@ from resource_api_client import ResourceAPIClient
 
 @pytest.mark.usefixtures('local_test_infrastructure')
 class TestWithLocalInfrastructure:
+    """
+    Tests for the Resource API using locally available infrastructure
+    """
 
     def test_resource_lifecycle(self, tmpdir, local_test_infrastructure):
         with local_test_infrastructure.app_client(tmpdir) as client:

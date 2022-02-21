@@ -25,7 +25,6 @@
 
 from sqlalchemy import ForeignKey, Column, Integer, String, UniqueConstraint, BigInteger
 from sqlalchemy.orm import relationship
-from marshmallow import fields
 
 from mrmat_python_api_flask import db, ma
 

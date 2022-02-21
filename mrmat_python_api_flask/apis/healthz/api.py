@@ -26,7 +26,7 @@ Blueprint for the Healthz API
 
 from flask_smorest import Blueprint
 
-from mrmat_python_api_flask.apis import status_output, StatusOutputSchema
+from mrmat_python_api_flask.apis import status, StatusOutputSchema
 
 bp = Blueprint('healthz', __name__, description='Health API')
 
@@ -41,4 +41,4 @@ def get():
     Returns:
         A status response
     """
-    return status_output.dump(dict(code=200, message='OK')), 200
+    return status(code=200, message='OK'), 200
