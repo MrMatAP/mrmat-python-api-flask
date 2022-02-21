@@ -80,7 +80,7 @@ class TestWithLocalInfrastructure:
 
                 (resp, resp_body) = rac.create(name='Unauthorised')
                 assert resp.status_code == 401
-                assert resp_body is None
+                assert resp_body == {}
 
                 (resp, resp_body) = rac.modify(1, name='Unauthorised')
                 assert resp.status_code == 401

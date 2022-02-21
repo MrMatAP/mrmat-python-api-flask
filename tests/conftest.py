@@ -109,7 +109,7 @@ class LocalTestInfrastructure(object):
     _ti_config: Dict = {}
 
     _pg_admin = None
-    _keycloak_admin: KeycloakAdmin
+    _keycloak_admin: KeycloakAdmin = None
     _auth_info: Dict = {}
     _app = None
 
@@ -125,11 +125,13 @@ class LocalTestInfrastructure(object):
             self._keycloak_admin = KeycloakAdmin(server_url=self._ti_config['keycloak'].get('admin_url'),
                                                  username=self._ti_config['keycloak'].get('admin_user'),
                                                  password=self._ti_config['keycloak'].get('admin_password'),
-                                                 realm_name='master')
+                                                 realm_name=self._ti_config['keycloak'].get('admin_realm'))
         except psycopg2.OperationalError as oe:
             raise TIException(skip=True, msg='Failed to obtain an administrative connection to PG') from oe
         except KeycloakOperationError as koe:
             raise TIException(skip=True, msg='Failed to obtain an administrative connection to KeyCloak') from koe
+        except Exception as e:
+            raise TIException(skip=True, msg='Unknown exception') from e
 
     @contextlib.contextmanager
     def app_dsn(self,
@@ -184,14 +186,14 @@ class LocalTestInfrastructure(object):
         try:
             if scopes is None:
                 scopes = []
-            for s in scopes:
-                if not self._keycloak_admin.get_client_scope(s):
-                    self._keycloak_admin.create_client_scope({
-                        'id': s,
-                        'name': s,
-                        'description': f'Test {s}',
-                        'protocol': 'openid-connect'
-                    })
+            # existing_scopes = self._keycloak_admin.get_client_scopes()
+            # existing_scopes = [e.name for e in existing_scopes]
+            for desired_scope in scopes:
+                self._keycloak_admin.create_client_scope(skip_exists=True, payload={
+                    'id': desired_scope,
+                    'name': desired_scope,
+                    'description': f'Test {desired_scope}',
+                    'protocol': 'openid-connect'})
             if not self._keycloak_admin.get_client_id(client_id):
                 self._keycloak_admin.create_client({
                     'id': client_id,

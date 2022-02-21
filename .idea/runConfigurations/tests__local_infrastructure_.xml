@@ -6,7 +6,7 @@
     <envs>
       <env name="APP_CONFIG" value="$USER_HOME$/etc/mrmat-python-api-flask/mrmat-python-api-flask.json" />
       <env name="HTTPLIB2_CA_CERTS" value="$USER_HOME$/var/ca/mrmat-ca/ca.crt" />
-      <env name="TI_CONFIG" value="$USER_HOME$/etc/ted.json" />
+      <env name="TI_CONFIG" value="$USER_HOME$/etc/ti-local.json" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
