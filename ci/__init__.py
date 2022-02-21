@@ -21,6 +21,11 @@
 #  SOFTWARE.
 #
 
+"""
+Build-time only module to determine the version of this project from CI and if
+not provided a reasonable development-time default.
+"""
+
 import os
 
 version = os.environ.get('MRMAT_VERSION', '0.0.0.dev0')

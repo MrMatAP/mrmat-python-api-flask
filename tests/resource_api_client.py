@@ -20,12 +20,19 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""
+Resource API test utilities
+"""
+
 from flask import Response
 from flask.testing import FlaskClient
 from typing import Tuple, Dict, Optional
 
 
 class ResourceAPIClient:
+    """
+    A client class for the resource API
+    """
     client: FlaskClient
     token: Dict
 

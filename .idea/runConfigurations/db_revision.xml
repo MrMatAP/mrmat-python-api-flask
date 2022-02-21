@@ -1,14 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mrmat-python-api-flask (prod)" type="Python.FlaskServer">
-    <option name="flaskEnv" value="production" />
+  <configuration default="false" name="db revision" type="PythonConfigurationType" factoryName="Python">
     <module name="mrmat-python-api-flask" />
-    <option name="target" value="mrmat_python_api_flask" />
-    <option name="targetType" value="PYTHON" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="FLASK_CONFIG" value="$USER_HOME$/etc/mrmat-python-api-flask.json" />
-      <env name="HTTPLIB2_CA_CERTS" value="$USER_HOME$/var/ca/mrmat-ca/ca.crt" />
+      <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="FLASK_APP" value="mrmat_python_api_flask" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -16,7 +13,13 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-    <option name="launchJavascriptDebuger" value="false" />
+    <option name="SCRIPT_NAME" value="flask" />
+    <option name="PARAMETERS" value="db revision -m newest --autogenerate" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
+    <option name="EMULATE_TERMINAL" value="true" />
+    <option name="MODULE_MODE" value="true" />
+    <option name="REDIRECT_INPUT" value="false" />
+    <option name="INPUT_FILE" value="" />
     <method v="2" />
   </configuration>
 </component>

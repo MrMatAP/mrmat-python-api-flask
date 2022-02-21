@@ -23,5 +23,5 @@
 """Pluggable blueprint of the Resource API v1
 """
 
-from .api import bp as api_resource_v1       # noqa: F401
-from .model import Owner, Resource, OwnerSchema, ResourceSchema  # noqa: F401
+from .api import bp as api_resource_v1                              # noqa: F401
+from .model import Owner, Resource, OwnerSchema, ResourceSchema     # noqa: F401

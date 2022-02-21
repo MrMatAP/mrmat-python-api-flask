@@ -19,3 +19,56 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
+
+"""
+Code that can be re-used by all APIs
+"""
+
+from typing import Optional
+from marshmallow import fields
+
+from mrmat_python_api_flask import ma
+
+
+class StatusOutputSchema(ma.Schema):
+    """
+    A schema for a generic status message returned via HTTP
+    """
+    class Meta:
+        fields = ('code', 'message')
+
+    code = fields.Int(
+        default=200,
+        metadata={
+            'description': 'An integer status code which will typically match the HTTP status code'
+        }
+    )
+    message = fields.Str(
+        required=True,
+        dump_only=True,
+        metadata={
+            'description': 'A human-readable message'
+        }
+    )
+
+    def __init__(self, code: Optional[int] = 200, message: Optional[str] = 'OK'):
+        super().__init__()
+        self.code = code
+        self.message = message
+
+
+status_output = StatusOutputSchema()
+
+
+def status(code: Optional[int] = 200, message: Optional[str] = 'OK') -> dict:
+    """
+    A utility to return a standardised HTTP status message
+    Args:
+        code: Status code, typically matches the HTTP status code
+        message: Human-readable message
+
+    Returns:
+        A dict to be rendered into JSON
+    """
+    status_message = StatusOutputSchema(code=code, message=message)
+    return status_output.dump(status_message)

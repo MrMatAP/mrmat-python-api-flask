@@ -20,21 +20,25 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Blueprint for the Healthz API
+"""
+Blueprint for the Healthz API
 """
 
-from flask.views import MethodView
 from flask_smorest import Blueprint
-from .model import HealthzOutput, healthz_output
 
-bp = Blueprint('healthz',
-               __name__,
-               description='Health API')
+from mrmat_python_api_flask.apis import status, StatusOutputSchema
+
+bp = Blueprint('healthz', __name__, description='Health API')
 
 
-@bp.route('/')
-class Healthz(MethodView):
-
-    @bp.response(200, HealthzOutput)
-    def get(self):
-        return healthz_output.dump({'status': 'OK'}), 200
+@bp.route('/', methods=['GET'])
+@bp.response(200, StatusOutputSchema)
+@bp.doc(summary='Get an indication of application health',
+        description='Assess application health')
+def get():
+    """
+    Respond with the app health status
+    Returns:
+        A status response
+    """
+    return status(code=200, message='OK'), 200

@@ -1,11 +1,19 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mrmat-python-api-flask (default, debug)" type="Python.FlaskServer">
-    <option name="flaskDebug" value="true" />
+<<<<<<<< HEAD:.idea/runConfigurations/mrmat_python_api_flask__prod_.xml
+  <configuration default="false" name="mrmat-python-api-flask (prod)" type="Python.FlaskServer">
+========
+  <configuration default="false" name="mrmat-python-api-flask (local infrastructure)" type="Python.FlaskServer">
+>>>>>>>> develop:.idea/runConfigurations/mrmat_python_api_flask__local_infrastructure_.xml
+    <option name="flaskEnv" value="production" />
     <module name="mrmat-python-api-flask" />
     <option name="target" value="mrmat_python_api_flask" />
     <option name="targetType" value="PYTHON" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="APP_CONFIG" value="$USER_HOME$/etc/mpaf-local.json" />
+      <env name="HTTPLIB2_CA_CERTS" value="$USER_HOME$/var/ca/mrmat-ca/ca.crt" />
+    </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="true" />
