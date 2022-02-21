@@ -46,6 +46,9 @@ from flask_smorest import Api
 
 
 class RequestFormatter(logging.Formatter):
+    """
+    Formatter for requests
+    """
     def format(self, record):
         if has_request_context():
             record.blueprint = request.blueprint
@@ -143,11 +146,11 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('OPENAPI_SWAGGER_UI_URL', 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/')
     app_config_file = os.path.expanduser(os.environ.get('APP_CONFIG', '~/etc/mrmat-python-api-flask.json'))
     if os.path.exists(app_config_file):
-        log.info(f'Applying configuration from {app_config_file}')
+        log.info('Applying configuration from %s', app_config_file)
         app.config.from_json(app_config_file)
     if config_override is not None:
         for override in config_override:
-            log.info(f'Overriding configuration for {override} from the command line')
+            log.info('Overriding configuration for %s from the command line', override)
         app.config.from_mapping(config_override)
     if app.config['SECRET_KEY'] is None:
         log.warning('Generating new secret key')
@@ -158,12 +161,12 @@ def create_app(config_override=None, instance_path=None):
 
     try:
         if not os.path.exists(app.instance_path):
-            log.info(f'Creating new instance path at {app.instance_path}')
+            log.info('Creating new instance path at %s', app.instance_path)
             os.makedirs(app.instance_path)
         else:
-            log.info(f'Using existing instance path at {app.instance_path}')
+            log.info('Using existing instance path at %s', app.instance_path)
     except OSError:
-        log.error(f'Failed to create new instance path at {app.instance_path}')
+        log.error('Failed to create new instance path at %s', app.instance_path)
         sys.exit(1)
 
     # When using Flask-SQLAlchemy, there is no need to explicitly import DAO classes because they themselves
@@ -184,7 +187,8 @@ def create_app(config_override=None, instance_path=None):
     api.spec.components.security_scheme('openId', dict(
                                             type='openIdConnect',
                                             description='MrMat OIDC',
-                                            openIdConnectUrl='http://localhost:8080/auth/realms/master/.well-known/openid-configuration'
+                                            openIdConnectUrl='http://localhost:8080/auth/realms/master'
+                                                             '/.well-known/openid-configuration'
                                         ))
 
     #
@@ -207,7 +211,7 @@ def create_app(config_override=None, instance_path=None):
 
     @app.after_request
     def after_request(response: flask.Response) -> flask.Response:
-        log.info(f'[{response.status_code}]')
+        log.info('[%s]', response.status_code)
         response.headers.add('X-MrMat-Python-API-Flask-Version', __version__)
         return response
 
