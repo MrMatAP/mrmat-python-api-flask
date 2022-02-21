@@ -20,17 +20,29 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Blueprint for the Greeting API in V3
+"""
+Blueprint for the Greeting API in V3
 """
 
-from flask import Blueprint, g
+from flask import g
+from flask_smorest import Blueprint
 
 from mrmat_python_api_flask import oidc
+from .model import greeting_v3_output, GreetingV3Output
 
-bp = Blueprint('greeting_v3', __name__)
+bp = Blueprint('greeting_v3', __name__, description='Greeting V3 API')
 
 
 @bp.route('/', methods=['GET'])
+@bp.response(200, schema=GreetingV3Output)
+@bp.doc(summary='Get a greeting for the authenticated name',
+        description='This version of the greeting API knows who you are',
+        security=[{'openId': ['profile']}])
 @oidc.accept_token(require_token=True)
 def get():
-    return {'message': f'Hello {g.oidc_token_info["username"]}'}, 200
+    """
+    Get a named greeting for the authenticated user
+    Returns:
+        A named greeting in JSON
+    """
+    return greeting_v3_output.dump(dict(message=f'Hello {g.oidc_token_info["username"]}')), 200

@@ -23,6 +23,7 @@
 """Main entry point when executing this application from the CLI
 """
 
+import os
 import sys
 import argparse
 
@@ -67,7 +68,11 @@ def main() -> int:
 
     overrides = {'DEBUG': args.debug}
     if args.oidc_secrets is not None:
-        overrides['OIDC_CLIENT_SECRETS'] = args.oidc_secrets
+        oidc_secrets_config = os.path.expanduser(args.oidc_secrets)
+        if not os.path.exists(oidc_secrets_config):
+            print(f'ERROR: {oidc_secrets_config} does not exist')
+            return 1
+        overrides['OIDC_CLIENT_SECRETS'] = oidc_secrets_config
     if args.dsn is not None:
         overrides['SQLALCHEMY_DATABASE_URI'] = args.dsn
 

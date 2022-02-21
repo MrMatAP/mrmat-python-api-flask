@@ -175,8 +175,8 @@ $ docker run --rm mrmat-python-api-flask:0.0.1
 
 ## Configuration
 
-You can provide configuration in a JSON file pointed to by the FLASK_CONFIG environment variable. The file is expected
-to be in the following format. The configuration file can contain anything the app picks up (see
+You can provide configuration in a JSON file pointed to by the APP_CONFIG environment variable, which defaults to
+`~/etc/mrmat-python-api-flask.json`. The configuration file can contain anything the app picks up (see
 `mrmat_python_api_flask/__init__.py`) but should typically contain the following three items:
 
 ```json
@@ -274,7 +274,7 @@ No authentication/authorisation is enforced by default. Token-based authenticati
 enforced by configuring connectivity to such extra central infrastructure. For this to happen, you must register the
 app in your OIDC IdP and create an OIDC secrets configuration file (json) of the following structure, which you
 subsequently point to using the `--oidc-secrets` option of the CLI or the `OIDC_CLIENT_SECRETS` key of the configuration
-file pointed to by the `FLASK_CONFIG` environment variable.
+file pointed to by the `APP_CONFIG` environment variable.
 
 ```json
 {
@@ -356,3 +356,6 @@ following form. The DISCOVERY_URL must point to the URL where the IdP publishes 
 ```
 
 >The client requires configuration with OIDC secrets and currently implements the Device code flow
+
+### Logging
+

@@ -20,22 +20,28 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Blueprint for the Greeting API in V1
 """
-from flask.views import MethodView
+Blueprint for the Greeting API in V1
+"""
+
+import logging
+
 from flask_smorest import Blueprint
-from .model import greeting_v1_output, GreetingV1Output
+from mrmat_python_api_flask.apis.greeting.v1.model import greeting_v1_output, GreetingV1Output
 
-bp = Blueprint('greeting_v1',
-               __name__,
-               description='Greeting V1 API')
+bp = Blueprint('greeting_v1', __name__, description='Greeting V1 API')
+log = logging.getLogger('api')
 
 
-@bp.route('/')
-class GreetingV1(MethodView):
-
-    @bp.response(200, GreetingV1Output)
-    def get(self):
-        """Get a Hello World message
-        """
-        return greeting_v1_output.dump({'message': 'Hello World'}), 200
+@bp.route('/', methods=['GET'])
+@bp.response(200, GreetingV1Output)
+@bp.doc(summary='Get an anonymous greeting',
+        description='This version of the greeting API does not have a means to determine who you are')
+def get_greeting():
+    """
+    Receive a Hello World message
+    Returns:
+        A plain-text hello world message
+    """
+    log.info('v1/helloworld')
+    return greeting_v1_output.dump({'message': 'Hello World'}), 200

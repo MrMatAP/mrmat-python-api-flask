@@ -25,7 +25,6 @@
 
 from sqlalchemy import ForeignKey, Column, Integer, String, UniqueConstraint, BigInteger
 from sqlalchemy.orm import relationship
-from marshmallow import fields
 
 from mrmat_python_api_flask import db, ma
 
@@ -48,23 +47,14 @@ class Resource(db.Model):
     UniqueConstraint('owner_id', 'name', name='no_duplicate_names_per_owner')
 
 
-class OwnerSchema(ma.Schema):
+class OwnerSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('id', 'client_id', 'name')
 
-    id = fields.Int(dump_only=True)
-    client_id = fields.Str(dump_only=True)
-    name = fields.Str()
 
-
-class ResourceSchema(ma.Schema):
+class ResourceSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('id', 'owner', 'name')
-
-    id = fields.Int()
-    owner_id = fields.Int(load_only=True)
-    owner = fields.Nested(lambda: OwnerSchema(), dump_only=True)    # pylint: disable=W0108
-    name = fields.Str()
 
 
 owner_schema = OwnerSchema()

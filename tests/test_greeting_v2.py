@@ -20,6 +20,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""
+Tests for the Greeting V2 API
+"""
+
 import pytest
 
 from flask import Response

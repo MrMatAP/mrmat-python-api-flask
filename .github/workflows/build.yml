@@ -62,12 +62,15 @@ jobs:
     - name: Establish a cache for dependencies
       uses: actions/cache@v2
       with:
-        path: ${HOME}/.local
+        path: |
+          ~/.local
+          ~/.cache/pip
         key: ${{ runner.os }}
 
     - name: Build
       run: |
         export PYTHONUSERBASE=${HOME}/.local
+        pip install --user wheel
         pip install --user -r requirements.txt
         ${PYTHONUSERBASE}/bin/pylint ${GITHUB_WORKSPACE}/mrmat_python_api_flask
         PYTHONPATH=${GITHUB_WORKSPACE} python -m pytest --cov=mrmat_python_api_flask
