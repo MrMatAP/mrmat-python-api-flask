@@ -73,9 +73,8 @@ jobs:
         pip install --user wheel
         pip install --user -r requirements.txt
         ${PYTHONUSERBASE}/bin/pylint ${GITHUB_WORKSPACE}/mrmat_python_api_flask
+        PYTHONPATH=${GITHUB_WORKSPACE} python -m pytest --cov=mrmat_python_api_flask
         PYTHONPATH=${GITHUB_WORKSPACE} python -m build --wheel -n
-        pip install --user dist/*.whl
-        PYTHONPATH=${GITHUB_WORKSPACE} pytest --cov=mrmat_python_api_flask
 
     - name: Upload test results
       uses: actions/upload-artifact@v2
