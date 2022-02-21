@@ -63,8 +63,8 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ${HOME}/.local
-          ${HOME}/.cache/pip
+          ~/.local
+          ~/.cache/pip
         key: ${{ runner.os }}
 
     - name: Build
