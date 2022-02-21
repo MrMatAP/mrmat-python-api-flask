@@ -25,7 +25,6 @@
 
 import sys
 import os
-import logging
 import logging.config
 import secrets
 import importlib.metadata
