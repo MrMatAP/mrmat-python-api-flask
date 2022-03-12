@@ -279,14 +279,14 @@ file pointed to by the `APP_CONFIG` environment variable.
 ```json
 {
   "web": {
-    "client_id": CLIENT_ID,
-    "client_secret": CLIENT_SECRET,
-    "auth_uri": AUTHORIZATION_ENDPOINT,
-    "token_uri": TOKEN_ENDPOINT,
-    "userinfo_uri": USERINFO_ENDPOINT,
-    "token_introspection_uri": INTROSPECTION_ENDPOINT,
-    "issuer": ISSUER,
-    "redirect_uris": REDIRECT_URIS
+    "client_id": "CLIENT_ID",
+    "client_secret": "CLIENT_SECRET",
+    "auth_uri": "AUTHORIZATION_ENDPOINT",
+    "token_uri": "TOKEN_ENDPOINT",
+    "userinfo_uri": "USERINFO_ENDPOINT",
+    "token_introspection_uri": "INTROSPECTION_ENDPOINT",
+    "issuer": "ISSUER",
+    "redirect_uris": "REDIRECT_URIS"
   }
 }
 ```
@@ -349,13 +349,10 @@ following form. The DISCOVERY_URL must point to the URL where the IdP publishes 
 
 ```json
 {
-  "client_id": CLIENT_ID,
-  "client_secret": CLIENT_SECRET,
-  "discovery_url": DISCOVERY_URL
+  "client_id": "CLIENT_ID",
+  "client_secret": "CLIENT_SECRET",
+  "discovery_url": "DISCOVERY_URL"
 }
 ```
 
 >The client requires configuration with OIDC secrets and currently implements the Device code flow
-
-### Logging
-
