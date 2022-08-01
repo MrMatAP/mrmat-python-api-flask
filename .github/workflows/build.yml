@@ -9,7 +9,7 @@ name: Build
 env:
   MAJOR: 0
   MINOR: 0
-  PYTHON_VERSION: 3.11.0
+  PYTHON_VERSION: 3.10.1
 
 #
 # Establish when the workflow is run
@@ -44,7 +44,7 @@ jobs:
     - name: Calculate Build Context
       run: |
         MRMAT_VERSION="${MAJOR}.${MINOR}.${GITHUB_RUN_NUMBER}"
-        if [ "$GITHUB_EVENT_NAME" == 'pull_request_target' -a "$GITHUB_BASE_REF" == 'main' ]; then
+        if [ "$GITHUB_EVENT_NAME" == 'pull_request_target' && GITHUB_BASE_REF == 'main']; then
           MRMAT_IS_RELEASE=true
           echo "::warning ::Building release ${MRMAT_VERSION}"
           echo "MRMAT_IS_RELEASE=true" >> $GITHUB_ENV
@@ -69,10 +69,12 @@ jobs:
 
     - name: Build
       run: |
+        export PYTHONUSERBASE=${HOME}/.local
+        pip install --user wheel
         pip install --user -r requirements.txt
-        pylint ${GITHUB_WORKSPACE}/src/python/mrmat_python_api_flask
-        PYTHONPATH=${GITHUB_WORKSPACE}/src/python python -m pytest
-        python -m build --wheel -n  
+        ${PYTHONUSERBASE}/bin/pylint ${GITHUB_WORKSPACE}/src/python/mrmat_python_api_flask
+        PYTHONPATH=${GITHUB_WORKSPACE}/src/python python -m pytest --cov=mrmat_python_api_flask
+        PYTHONPATH=${GITHUB_WORKSPACE} python -m build --wheel -n
 
     - name: Upload test results
       uses: actions/upload-artifact@v2
