@@ -99,11 +99,11 @@ log = logging.getLogger(__name__)
 try:
     __version__ = importlib.metadata.version('mrmat-python-api-flask')
 except importlib.metadata.PackageNotFoundError:
-    # You have not actually installed the wheel yet. We may be within CI so pick that version or fall back
-    __version__ = os.environ.get('MRMAT_VERSION', '0.0.0.dev0')
+    # You have not yet installed this as a package, likely because you're hacking on it in some IDE
+    __version__ = '0.0.0.dev0'
 
 #
-# Initialise supporting services
+# Initialize supporting services
 
 db = SQLAlchemy()
 ma = Marshmallow()

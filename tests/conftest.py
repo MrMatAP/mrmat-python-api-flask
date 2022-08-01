@@ -90,7 +90,12 @@ class NoTestInfrastructure(AbstractTestInfrastructure):
             'SECRET_KEY': secrets.token_hex(16)
         })
         with self._app.app_context():
-            upgrade(directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))
+            upgrade(directory=os.path.join(os.path.dirname(__file__),
+                                           '..',
+                                           'src',
+                                           'python',
+                                           'mrmat_python_api_flask',
+                                           'migrations'))
             db.create_all()
         yield self._app
 
