@@ -11,6 +11,8 @@ wheel>=0.36.0            # MIT
 pylint~=2.15.5           # MIT
 pytest~=7.2.0            # GPL-2.0-or-later
 pytest-cov~=4.0.0        # MIT
+pyjwt~=2.6.0             # MIT
+python-keycloak~=2.6.0   # MIT
 
 # Runtime requirements
 
