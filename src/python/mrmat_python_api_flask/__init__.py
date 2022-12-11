@@ -38,57 +38,6 @@ from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
 from flask_smorest import Api
 
-
-#
-# Establish consistent logging
-# The logger we obtain here is an operational logger, not the one logging requests. The former uses the matching
-# logger '__name__', the latter uses 'werkzeug'
-
-
-class RequestFormatter(logging.Formatter):
-    """
-    Formatter for requests
-    """
-    def format(self, record):
-        if has_request_context():
-            record.blueprint = request.blueprint
-            record.url = request.full_path
-            record.remote_addr = request.remote_addr
-            record.user_agent = request.user_agent
-        else:
-            record.url = None
-            record.remote_addr = None
-        return super().format(record)
-
-
-logging.config.dictConfig({
-    'version': 1,
-    'formatters': {
-        'default': {
-            'class': 'logging.Formatter',
-            'format': '%(asctime)s %(name)-22s %(levelname)-8s %(message)s'
-        }
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'INFO',
-            'formatter': 'default'
-        }
-    },
-    'loggers': {
-        __name__: {
-            'level': 'INFO',
-            'handlers': ['console'],
-            'propagate': False
-        }
-    },
-    'root': {
-        'level': 'INFO',
-        'formatter': 'default',
-        'handlers': ['console']
-    }
-})
 log = logging.getLogger(__name__)
 
 #

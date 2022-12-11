@@ -50,7 +50,7 @@ class ClientException(Exception):
 
 
 def oidc_discovery(config: Dict) -> Dict:
-    resp = requests.get(config['discovery_url'])
+    resp = requests.get(config['discovery_url'], timeout=60)
     if resp.status_code != 200:
         raise ClientException(exit_code=1, msg=f'Unexpected response {resp.status_code} from discovery endpoint')
     try:
@@ -64,7 +64,8 @@ def oidc_device_auth(config: Dict, discovery: Dict) -> Dict:
     resp = requests.post(url=discovery['device_authorization_endpoint'],
                          data={'client_id': config['client_id'],
                                'client_secret': config['client_secret'],
-                               'scope': ['openid', 'profile']})
+                               'scope': ['openid', 'profile']},
+                         timeout=60)
     if resp.status_code != 200:
         raise ClientException(exit_code=1, msg=f'Unexpected response {resp.status_code} from device endpoint')
     try:
@@ -82,7 +83,8 @@ def oidc_check_auth(config: Dict, discovery: Dict, device_auth: Dict):
                              data={'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
                                    'device_code': device_auth['device_code'],
                                    'client_id': config['client_id'],
-                                   'client_secret': config['client_secret']})  # client_secret only for keycloak
+                                   'client_secret': config['client_secret']},
+                             timeout=60)  # client_secret only for keycloak
         if resp.status_code == 400:
             body = resp.json()
             if body['error'] == 'authorization_pending':
@@ -213,7 +215,8 @@ def main(argv=None) -> int:
         # We're using requests directly here because requests_oauthlib doesn't support device code flow directly
 
         resp = requests.get(f'http://{args.host}:{args.port}/api/greeting/v3/',
-                            headers={'Authorization': f'Bearer {auth["id_token"]}'})
+                            headers={'Authorization': f'Bearer {auth["id_token"]}'},
+                            timeout=60)
         log.info('Status Code: %s', resp.status_code)
         log.info(resp.content)
 

@@ -51,7 +51,7 @@ include = ["mrmat_python_api_flask*"]
 namespaces = true
 
 [tool.setuptools.package-data]
-"*" = ["*.mo", "templates/*", "static/*"]
+"*" = ["*.mo", "migrations/*", "templates/*", "static/*"]
 
 [project.scripts]
 mrmat-python-api-flask = "mrmat_python_api_flask.cui:main"
