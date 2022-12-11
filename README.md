@@ -1,6 +1,6 @@
 # MrMat :: Python :: API :: Flask
 
-[![Build](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/build.yml/badge.svg)](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/build.yml)
+[![Build](https://github.com/MrMatAP/mrmat-python-api-flask/actions/workflows/build.yml/badge.svg)](https://github.com/MrMatAP/mrmat-python-api-flask/actions/workflows/build.yml)
 
 Boilerplate (and playground) for a code-first Python Flask API, with all the bells and whistles we've come to expect:
 

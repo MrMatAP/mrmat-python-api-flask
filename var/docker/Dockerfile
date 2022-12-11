@@ -1,6 +1,6 @@
-FROM python:3.10.1-slim
+FROM python:3.10.5-slim
 
-ADD migrations /migrations
+USER 0:0
 COPY dist/mrmat_python_api_flask-*.whl /
 RUN \
     groupadd -g 1000 flask \
@@ -9,19 +9,17 @@ RUN \
     && chown -R 1000:1000 /app /app/instance
 
 USER 1000:1000
-
 ENV FLASK_APP=mrmat_python_api_flask
 RUN \
     python -mvenv /app/venv \
     && . /app/venv/bin/activate \
     && python -m pip install --no-cache-dir -U pip setuptools wheel \
     && pip install --no-cache-dir gunicorn \
-    && pip install --no-cache-dir /mrmat_python_api_flask-*.whl \
-    && flask db upgrade
+    && pip install --no-cache-dir /mrmat_python_api_flask-*.whl
 
 USER 0:0
 RUN \
-    rm -rf /mrmat_python_api_flask-*.whl /migrations
+    rm -rf /mrmat_python_api_flask-*.whl
 
 EXPOSE 8080
 USER 1000:1000

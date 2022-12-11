@@ -271,7 +271,7 @@ class LocalTestInfrastructure(object):
                 'OIDC_CLIENT_SECRETS': auth['client_secrets_file']
             })
             with self._app.app_context():
-                upgrade(directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))
+                upgrade(directory=os.path.join(os.path.dirname(__file__), '..', 'var', 'migrations'))
                 db.create_all()
             yield self._app
 
