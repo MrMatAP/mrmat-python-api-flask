@@ -25,6 +25,7 @@
 
 import sys
 import os
+import json
 import logging.config
 import secrets
 import importlib.metadata
@@ -146,7 +147,10 @@ def create_app(config_override=None, instance_path=None):
     app_config_file = os.path.expanduser(os.environ.get('APP_CONFIG', '~/etc/mrmat-python-api-flask.json'))
     if os.path.exists(app_config_file):
         log.info('Applying configuration from %s', app_config_file)
-        app.config.from_json(app_config_file)
+        with open(app_config_file, 'r', encoding='UTF-8') as c:
+            config = json.load(c)
+            app.config.from_object(config)
+            #app.config.from_json(app_config_file)
     if config_override is not None:
         for override in config_override:
             log.info('Overriding configuration for %s from the command line', override)
