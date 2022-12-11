@@ -26,4 +26,4 @@ Flask-OIDC~=1.4.0               # MIT
 
 # Do we need these?
 #requests_oauthlib~=1.3.1        # ISC
-#itsdangerous<=2.0.1             # BSD 3-Clause      Must affix so JSONWebSignatureSerializer is known
+itsdangerous<=2.0.1             # BSD 3-Clause      Must affix so JSONWebSignatureSerializer is known
