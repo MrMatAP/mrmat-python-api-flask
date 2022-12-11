@@ -1,6 +1,6 @@
 # MrMat :: Python :: API :: Flask
 
-[![Build](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/build.yml/badge.svg)](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/build.yml)
+[![Build](https://github.com/MrMatAP/mrmat-python-api-flask/actions/workflows/build.yml/badge.svg)](https://github.com/MrMatAP/mrmat-python-api-flask/actions/workflows/build.yml)
 
 Boilerplate (and playground) for a code-first Python Flask API, with all the bells and whistles we've come to expect:
 
@@ -84,8 +84,8 @@ You have the choice of running this
 You can, of course, run this as a Flask app straight from the project directory:
 
 ```shell
-$ export FLASK_APP=mrmat_python_api_flask
-$ flask run
+$ cd src/python
+$ FLASK_APP=mrmat_python_api_flask flask run
  * Serving Flask app 'mrmat_python_api_flask' (lazy loading)
  * Environment: production
    WARNING: This is a development server. Do not use it in a production deployment.

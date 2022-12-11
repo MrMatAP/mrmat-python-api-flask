@@ -25,6 +25,7 @@
 
 import sys
 import os
+import json
 import logging.config
 import secrets
 import importlib.metadata
@@ -37,57 +38,6 @@ from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
 from flask_smorest import Api
 
-
-#
-# Establish consistent logging
-# The logger we obtain here is an operational logger, not the one logging requests. The former uses the matching
-# logger '__name__', the latter uses 'werkzeug'
-
-
-class RequestFormatter(logging.Formatter):
-    """
-    Formatter for requests
-    """
-    def format(self, record):
-        if has_request_context():
-            record.blueprint = request.blueprint
-            record.url = request.full_path
-            record.remote_addr = request.remote_addr
-            record.user_agent = request.user_agent
-        else:
-            record.url = None
-            record.remote_addr = None
-        return super().format(record)
-
-
-logging.config.dictConfig({
-    'version': 1,
-    'formatters': {
-        'default': {
-            'class': 'logging.Formatter',
-            'format': '%(asctime)s %(name)-22s %(levelname)-8s %(message)s'
-        }
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'INFO',
-            'formatter': 'default'
-        }
-    },
-    'loggers': {
-        __name__: {
-            'level': 'INFO',
-            'handlers': ['console'],
-            'propagate': False
-        }
-    },
-    'root': {
-        'level': 'INFO',
-        'formatter': 'default',
-        'handlers': ['console']
-    }
-})
 log = logging.getLogger(__name__)
 
 #
@@ -99,11 +49,11 @@ log = logging.getLogger(__name__)
 try:
     __version__ = importlib.metadata.version('mrmat-python-api-flask')
 except importlib.metadata.PackageNotFoundError:
-    # You have not actually installed the wheel yet. We may be within CI so pick that version or fall back
-    __version__ = os.environ.get('MRMAT_VERSION', '0.0.0.dev0')
+    # You have not yet installed this as a package, likely because you're hacking on it in some IDE
+    __version__ = '0.0.0.dev0'
 
 #
-# Initialise supporting services
+# Initialize supporting services
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -146,7 +96,10 @@ def create_app(config_override=None, instance_path=None):
     app_config_file = os.path.expanduser(os.environ.get('APP_CONFIG', '~/etc/mrmat-python-api-flask.json'))
     if os.path.exists(app_config_file):
         log.info('Applying configuration from %s', app_config_file)
-        app.config.from_json(app_config_file)
+        with open(app_config_file, 'r', encoding='UTF-8') as c:
+            config = json.load(c)
+            app.config.from_object(config)
+            #app.config.from_json(app_config_file)
     if config_override is not None:
         for override in config_override:
             log.info('Overriding configuration for %s from the command line', override)

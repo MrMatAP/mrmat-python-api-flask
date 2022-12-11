@@ -159,10 +159,6 @@ coverage.xml
 .pytest_cache/
 pytestdebug.log
 
-# Translations
-*.mo
-*.pot
-
 # Django stuff:
 *.log
 local_settings.py
@@ -245,6 +241,3 @@ dmypy.json
 .prof
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains,python
-
-
-.coverage

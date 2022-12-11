@@ -58,7 +58,7 @@ def get_all():
 
 @bp.route('/<i>', methods=['GET'])
 @bp.doc(summary='Get a single resource',
-        description='Return a single resource identified by its resource id.',
+        description='Return a single resource identified by its resource id',
         security=[{'openId': ['mpaf-read']}])
 @bp.response(200, schema=ResourceSchema)
 @oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])

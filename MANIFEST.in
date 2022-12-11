@@ -1,5 +1,0 @@
-#
-# If and when we have templates or static content, graft it here
-#graft mrmat_python_api_flask/templates
-#graft mrmat_python_api_flask/static
-global-exclude *.pyc

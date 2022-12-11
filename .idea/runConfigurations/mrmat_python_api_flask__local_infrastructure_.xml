@@ -12,7 +12,9 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="APP_CONFIG" value="$USER_HOME$/etc/mpaf-local.json" />
+      <env name="FLASK_APP" value="mrmat_python_api_flask" />
       <env name="HTTPLIB2_CA_CERTS" value="$USER_HOME$/var/ca/mrmat-ca/ca.crt" />
+      <env name="FLASK_ENV" value="production" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
