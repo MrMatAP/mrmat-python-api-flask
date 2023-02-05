@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/mrmat-python-api-flask.iml" filepath="$PROJECT_DIR$/.idea/mrmat-python-api-flask.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/var/helm/mrmat-python-api-flask.helm.iml" filepath="$PROJECT_DIR$/.idea/modules/var/helm/mrmat-python-api-flask.helm.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/var/integrationTest/mrmat-python-api-flask.integrationTest.iml" filepath="$PROJECT_DIR$/.idea/modules/var/integrationTest/mrmat-python-api-flask.integrationTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/var/container/org.mrmat.python.api.flask.mrmat-python-api-flask.container.iml" filepath="$PROJECT_DIR$/.idea/modules/var/container/org.mrmat.python.api.flask.mrmat-python-api-flask.container.iml" />
     </modules>
   </component>
 </project>
