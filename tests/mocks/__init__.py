@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2021 MrMat
+#  Copyright (c) 2023 MrMat
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -19,25 +19,3 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
-
-"""Greeting API v1 Model"""
-
-from marshmallow import fields
-
-from mrmat_python_api_flask import ma
-
-
-class GreetingV1Output(ma.Schema):
-    class Meta:
-        fields = ('message',)
-
-    message = fields.Str(
-        required=True,
-        dump_only=True,
-        metadata={
-            'description': 'A greeting message'
-        }
-    )
-
-
-greeting_v1_output = GreetingV1Output()

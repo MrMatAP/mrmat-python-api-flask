@@ -21,25 +21,25 @@
 #  SOFTWARE.
 
 """
-Tests for the Greeting V3 API
+Tests for the greeting v1 API
 """
 
 import pytest
-from flask import Response
+import flask.testing
+
+from mrmat_python_api_flask.apis.greeting.v1 import GreetingV1, greeting_v1_output_schema
 
 
-@pytest.mark.usefixtures('local_test_infrastructure')
-class TestWithLocalInfrastructure:
+@pytest.mark.usefixtures('local_app_client')
+class TestGreetingV1:
     """
-    Tests for the Greeting V3 API using locally available infrastructure
+    Test the GreetingV1 API
     """
 
-    def test_greeting_v3(self, tmpdir, local_test_infrastructure):
-        with local_test_infrastructure.app_client(tmpdir) as client:
-            with local_test_infrastructure.user_token() as user_token:
-                rv: Response = client.get('/api/greeting/v3/',
-                                          headers={'Authorization': f'Bearer {user_token["access_token"]}'})
-                assert rv.status_code == 200
-                json_body = rv.get_json()
-                assert 'message' in json_body
-                assert json_body['message'] == f'Hello {user_token["user_id"]}'
+    def test_greeting_v1(self, local_app_client):
+        response: flask.testing.TestResponse = local_app_client.get('/api/greeting/v1/')
+        assert response.status_code == 200, 'We get a success response'
+        assert response.content_type == 'application/json', 'The content type is JSON'
+        body = greeting_v1_output_schema.load(response.json)
+        assert isinstance(body, GreetingV1), 'The response body is a GreetingV1 object'
+        assert body.message == 'Hello World', 'The GreetingV1 object contains the expected greeting'

@@ -35,10 +35,8 @@ from flask import Flask, has_request_context, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
-from flask_oidc import OpenIDConnect
 from flask_smorest import Api
-
-log = logging.getLogger(__name__)
+from authlib.integrations.flask_client import OAuth
 
 #
 # Establish consistent logging
@@ -51,6 +49,7 @@ try:
 except importlib.metadata.PackageNotFoundError:
     # You have not yet installed this as a package, likely because you're hacking on it in some IDE
     __version__ = '0.0.0.dev0'
+__app_version_header__ = 'X-MrMat-Python-API-Flask-Version'
 
 #
 # Initialize supporting services
@@ -58,8 +57,8 @@ except importlib.metadata.PackageNotFoundError:
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
-oidc = OpenIDConnect()
 api = Api()
+oauth = OAuth()
 
 
 def create_app(config_override=None, instance_path=None):
@@ -93,19 +92,18 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('OPENAPI_JSON_PATH', '/openapi.json')
     app.config.setdefault('OPENAPI_SWAGGER_UI_PATH', '/swagger-ui')
     app.config.setdefault('OPENAPI_SWAGGER_UI_URL', 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/')
-    app_config_file = os.path.expanduser(os.environ.get('APP_CONFIG', '~/etc/mrmat-python-api-flask.json'))
+    app_config_file = os.environ.get('APP_CONFIG', os.path.expanduser('~/etc/mrmat-python-api-flask.json'))
     if os.path.exists(app_config_file):
-        log.info('Applying configuration from %s', app_config_file)
+        app.logger.info('Applying configuration from %s', app_config_file)
         with open(app_config_file, 'r', encoding='UTF-8') as c:
             config = json.load(c)
             app.config.from_object(config)
-            #app.config.from_json(app_config_file)
     if config_override is not None:
         for override in config_override:
-            log.info('Overriding configuration for %s from the command line', override)
+            app.logger.info('Overriding configuration for %s from the command line', override)
         app.config.from_mapping(config_override)
     if app.config['SECRET_KEY'] is None:
-        log.warning('Generating new secret key')
+        app.logger.warning('Generating new secret key')
         app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 
     #
@@ -113,35 +111,40 @@ def create_app(config_override=None, instance_path=None):
 
     try:
         if not os.path.exists(app.instance_path):
-            log.info('Creating new instance path at %s', app.instance_path)
+            app.logger.info('Creating new instance path at %s', app.instance_path)
             os.makedirs(app.instance_path)
         else:
-            log.info('Using existing instance path at %s', app.instance_path)
+            app.logger.info('Using existing instance path at %s', app.instance_path)
     except OSError:
-        log.error('Failed to create new instance path at %s', app.instance_path)
+        app.logger.error('Failed to create new instance path at %s', app.instance_path)
         sys.exit(1)
 
-    # When using Flask-SQLAlchemy, there is no need to explicitly import DAO classes because they themselves
-    # inherit from the SQLAlchemy model
+    # There is no need to explicitly load DAO classes here because they inherit from the SQLAlchemy model
 
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
     api.init_app(app)
-    if 'OIDC_CLIENT_SECRETS' in app.config.keys():
-        oidc.init_app(app)
-    else:
-        log.warning('Running without any authentication/authorisation')
+    oauth.init_app(app)
+    oauth.register(name='mrmat',
+                   server_metadata_url='http://localhost:5001/.well-known/openid-configuration',
+                   client_kwargs={'scope':'openid email profile'})
+    # if 'OIDC_CLIENT_SECRETS' in app.config.keys():
+    #     oauth.init_app(app)
+    #     oauth.register(name='mrmat',
+    #                    server_metadata_url='http://localhost:5001/.well-known/openid-configuration',
+    #                    client_kwargs={'scope':'openid email profile'})
+    # else:
+    #     app.logger.warning('Running without any authentication/authorisation')
 
     #
-    # Security Schemes
+    # Set Security Schemes in the generated OpenAPI descriptor
 
-    api.spec.components.security_scheme('openId', dict(
-                                            type='openIdConnect',
-                                            description='MrMat OIDC',
-                                            openIdConnectUrl='http://localhost:8080/auth/realms/master'
-                                                             '/.well-known/openid-configuration'
-                                        ))
+    # api.spec.components.security_scheme('openId',
+    #                                     {'type': 'openIdConnect',
+    #                                      'description': 'MrMat OIDC',
+    #                                      'openIdConnectUrl': 'http://localhost:8080/auth/realms/master/.well-known'
+    #                                                          '/openid-configuration'})
 
     #
     # Import and register our APIs here
@@ -163,8 +166,8 @@ def create_app(config_override=None, instance_path=None):
 
     @app.after_request
     def after_request(response: flask.Response) -> flask.Response:
-        log.info('[%s]', response.status_code)
-        response.headers.add('X-MrMat-Python-API-Flask-Version', __version__)
+        app.logger.info('[%s]', response.status_code)
+        response.headers.add(__app_version_header__, __version__)
         return response
 
     return app
