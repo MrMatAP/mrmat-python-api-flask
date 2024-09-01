@@ -21,20 +21,23 @@
 #  SOFTWARE.
 
 """
-Tests for the greeting v1 API
+Blueprint for the Greeting API in V1
 """
 
-import pytest
+from flask_smorest import Blueprint
+from mrmat_python_api_flask.apis.greeting.v1.model import GreetingV1, GreetingV1OutputSchema, greeting_v1_output_schema
 
-from flask import Response
+bp = Blueprint('greeting_v1', __name__, description='Greeting V1 API')
 
 
-@pytest.mark.usefixtures('no_test_infrastructure')
-class TestWithoutInfrastructure:
-
-    def test_greeting_v1(self, no_test_infrastructure):
-        with no_test_infrastructure.app_client() as client:
-            rv: Response = client.get('/api/greeting/v1/')
-            json_body = rv.get_json()
-            assert 'message' in json_body
-            assert json_body['message'] == 'Hello World'
+@bp.route('/', methods=['GET'])
+@bp.response(200, GreetingV1OutputSchema)
+@bp.doc(summary='Get an anonymous greeting',
+        description='This version of the greeting API does not have a means to determine who you are')
+def get_greeting():
+    """
+    Receive a Hello World message
+    Returns:
+        A plain-text hello world message
+    """
+    return greeting_v1_output_schema.dump(GreetingV1(message='Hello World')), 200

@@ -39,13 +39,51 @@ import psycopg2
 import psycopg2.sql
 import psycopg2.extensions
 
+import flask.testing
 from flask_migrate import upgrade
 from keycloak.keycloak_admin import KeycloakOpenID, KeycloakAdmin
 from keycloak.exceptions import KeycloakOperationError
 
+from mocks.mock_idp import MockIDP
 from mrmat_python_api_flask import create_app, db
 
 LOGGER = logging.getLogger(__name__)
+
+
+@pytest.fixture()
+def local_app():
+    app = create_app()
+    app.config.update({'TESTING': True})
+    yield app
+
+@pytest.fixture()
+def local_app_client(local_app) -> flask.testing.FlaskClient:
+    return local_app.test_client()
+
+@pytest.fixture()
+def mock_idp():
+    mock = MockIDP()
+    mock.start()
+    yield mock
+    mock.stop()
+
+
+@pytest.fixture()
+def auth_app(mock_idp):
+    client = mock_idp.register_client(client_name='mrmat-python-api-flask',
+                                      redirect_uris=['http://localhost:5000'])
+    app = create_app()
+    app.config.update({
+        'TESTING': True,
+        'OIDC_CLIENT_SECRETS': True,
+        'MRMAT_CLIENT_ID': client.client_id,
+        'MRMAT_CLIENT_SECRET': client.client_secret
+    })
+    yield app
+
+@pytest.fixture()
+def auth_app_client(auth_app) -> flask.testing.FlaskClient:
+    return auth_app.test_client()
 
 
 class TIException(Exception):
@@ -93,7 +131,6 @@ class NoTestInfrastructure(AbstractTestInfrastructure):
             upgrade(directory=os.path.join(os.path.dirname(__file__),
                                            '..',
                                            'src',
-                                           'python',
                                            'mrmat_python_api_flask',
                                            'migrations'))
             db.create_all()

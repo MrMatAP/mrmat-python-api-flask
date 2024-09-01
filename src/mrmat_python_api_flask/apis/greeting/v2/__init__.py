@@ -20,7 +20,12 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Pluggable blueprint of the Greeting API v3
+"""Pluggable blueprint of the Greeting API v2
 """
 
-from .api import bp as api_greeting_v3       # noqa: F401
+from .model import (
+    GreetingV2Output,
+    GreetingV2InputSchema,
+    GreetingV2OutputSchema,
+    greeting_v2_output_schema)  # noqa: F401
+from .api import bp as api_greeting_v2                                                                      # noqa: F401
