@@ -20,8 +20,56 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Pluggable blueprint of the Greeting API v2
-"""
+"""Greeting API v2 Model"""
 
-from .model import GreetingV2Output, GreetingV2Input          # noqa: F401
-from .api import bp as api_greeting_v2                        # noqa: F401
+import dataclasses
+from marshmallow import fields, post_load
+
+from mrmat_python_api_flask import ma
+
+
+@dataclasses.dataclass
+class GreetingV2Output:
+    """
+    A dataclass containing the v2 greeting
+    """
+    message: str
+
+
+class GreetingV2InputSchema(ma.Schema):
+    """
+    The input schema for the Greeting V2 API
+    """
+    class Meta:
+        fields: ('name',)
+
+    name = fields.Str(
+        required=False,
+        load_only=True,
+        missing='Stranger',
+        metadata={
+            'description': 'The name to greet'
+        }
+    )
+
+
+class GreetingV2OutputSchema(ma.Schema):
+    """
+    The GreetingV2 Output Schema
+    """
+    class Meta:
+        fields = ('message',)
+
+    message = fields.Str(
+        required=True,
+        metadata={
+            'description': 'A greeting message'
+        }
+    )
+
+    @post_load
+    def make_greeting_v2(self, data, **kwargs):
+        return GreetingV2Output(**data)
+
+
+greeting_v2_output_schema = GreetingV2OutputSchema()

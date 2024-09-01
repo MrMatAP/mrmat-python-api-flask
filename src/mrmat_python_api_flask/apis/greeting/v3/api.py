@@ -20,8 +20,35 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Pluggable blueprint of the Greeting API v1
+"""
+Blueprint for the Greeting API in V3
 """
 
-from .model import GreetingV1Output          # noqa: F401
-from .api import bp as api_greeting_v1       # noqa: F401
+from flask import g
+from flask_smorest import Blueprint
+from authlib.integrations.flask_oauth2 import ResourceProtector, current_token
+from authlib.oauth2.rfc6750 import BearerTokenValidator
+
+from .model import GreetingV3, GreetingV3OutputSchema, greeting_v3_output_schema
+
+bp = Blueprint('greeting_v3', __name__, description='Greeting V3 API')
+require_oauth = ResourceProtector()
+require_oauth.register_token_validator(BearerTokenValidator())
+
+
+@bp.route('/', methods=['GET'])
+@bp.response(200, schema=GreetingV3OutputSchema)
+@bp.doc(summary='Get a greeting for the authenticated name',
+        description='This version of the greeting API knows who you are',
+        security=[{'openId': ['profile']}])
+@require_oauth('openid')
+def get():
+    """
+    Get a named greeting for the authenticated user
+    Returns:
+        A named greeting in JSON
+    """
+    name = current_token.name
+    return greeting_v3_output_schema.dump(
+        GreetingV3(message=f'Hello {g.oidc_token_info["username"]}')
+    ), 200

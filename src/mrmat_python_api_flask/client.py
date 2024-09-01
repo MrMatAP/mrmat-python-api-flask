@@ -31,7 +31,7 @@ from argparse import ArgumentParser, Namespace
 from typing import List, Optional, Dict
 import requests
 
-from mrmat_python_api_flask import __version__, log
+from mrmat_python_api_flask import __version__
 
 
 class ClientException(Exception):

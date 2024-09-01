@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="mrmat-python-api-flask (no infrastructure)" type="Python.FlaskServer">
     <module name="mrmat-python-api-flask" />
-    <option name="target" value="mrmat_python_api_flask" />
+    <option name="target" value="src.mrmat_python_api_flask" />
     <option name="targetType" value="PYTHON" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
