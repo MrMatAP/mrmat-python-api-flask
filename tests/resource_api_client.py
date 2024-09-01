@@ -25,7 +25,7 @@ Resource API test utilities
 """
 
 from flask import Response
-from flask.testing import FlaskClient
+from flask.testing import FlaskClient, TestResponse
 from typing import Tuple, Dict, Optional
 
 
@@ -45,7 +45,7 @@ class ResourceAPIClient:
             self._headers = {'Authorization': f'Bearer {token}'}
 
     def get_all(self) -> Tuple:
-        resp: Response = self.client.get('/api/resource/v1/', headers=self._headers)
+        resp: TestResponse = self.client.get('/api/resource/v1/', headers=self._headers)
         resp_body = self._parse_body(resp)
         return resp, resp_body
 

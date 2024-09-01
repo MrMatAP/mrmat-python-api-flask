@@ -20,21 +20,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Pluggable blueprint of the Greeting API v3
 """
-Tests for the Greeting V2 API
-"""
 
-import pytest
-
-from flask import Response
-
-
-@pytest.mark.usefixtures('no_test_infrastructure')
-class TestWithoutInfrastructure:
-
-    def test_greeting_v2(self, no_test_infrastructure):
-        with no_test_infrastructure.app_client() as client:
-            rv: Response = client.get('/api/greeting/v2/?name=MrMat')
-            json_body = rv.get_json()
-            assert 'message' in json_body
-            assert json_body['message'] == 'Hello MrMat'
+from .model import GreetingV3, GreetingV3OutputSchema, greeting_v3_output_schema   # noqa: F401
+from .api import bp as api_greeting_v3                                             # noqa: F401

@@ -30,15 +30,15 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "rich~=12.6.0",
-    "Flask~=2.2.2",
-    "Flask-SQLAlchemy~=3.0.2",
-    "Flask-Migrate~=4.0.0",
-    "flask-smorest~=0.40.0",
-    "Flask-Marshmallow~=0.14.0",
-    "marshmallow-sqlalchemy~=0.28.1",
-    "psycopg2-binary~=2.9.5",
-    "Flask-OIDC~=1.4.0"
+    "Flask~=2.2.3",                     # BSD 3-Clause
+    "Flask-SQLAlchemy~=3.0.3",          # BSD 3-Clause
+    "Flask-Migrate~=4.0.4",             # MIT
+    "flask-smorest~=0.40.0",            # MIT
+    "Flask-Marshmallow~=0.14.0",        # MIT
+    "marshmallow-sqlalchemy~=0.28.1",   # MIT
+    "psycopg2-binary~=2.9.5",           # LGPL with exceptions
+    "Flask-OIDC~=1.4.0",                # MIT
+    "itsdangerous<=2.0.1"               # BSD 3-Clause      Must affix so JSONWebSignatureSerializer is known
 ]
 dynamic = ["version"]
 
@@ -46,7 +46,7 @@ dynamic = ["version"]
 version = { attr = "ci.version "}
 
 [tool.setuptools.packages.find]
-where = ["src/python"]
+where = ["src"]
 include = ["mrmat_python_api_flask*"]
 namespaces = true
 
@@ -54,14 +54,13 @@ namespaces = true
 "*" = ["*.mo", "migrations/*", "templates/*", "static/*"]
 
 [project.scripts]
-mrmat-python-api-flask = "mrmat_python_api_flask.cui:main"
 mrmat-python-api-flask-client = "mrmat_python_api_flask.client:main"
 
 # If you are debugging your tests using PyCharm then comment out the coverage options
 # in addopts
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--cov=mrmat_python_api_flask --cov-report=term --cov-report=xml:build/coverage.xml --junit-xml=build/junit.xml"
+#addopts = "--cov=mrmat_python_api_flask --cov-report=term --cov-report=xml:build/coverage.xml --junit-xml=build/junit.xml"
 testpaths = ["tests"]
 junit_family = "xunit2"
 log_cli = 1

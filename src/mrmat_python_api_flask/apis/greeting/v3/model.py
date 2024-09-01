@@ -20,32 +20,35 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""
-Blueprint for the Greeting API in V2
-"""
+"""Greeting API v3 Model"""
 
-from flask_smorest import Blueprint
-from .model import greeting_v2_output, GreetingV2Output, GreetingV2Input
+import dataclasses
+from marshmallow import fields
 
-bp = Blueprint('greeting_v2', __name__, description='Greeting V2 API')
+from mrmat_python_api_flask import ma
 
 
-@bp.route('/', methods=['GET'])
-@bp.arguments(GreetingV2Input,
-              description='The name to greet',
-              location='query',
-              required=False)
-@bp.response(200, GreetingV2Output)
-@bp.doc(summary='Get a greeting for a given name',
-        description='This version of the greeting API allows you to specify who to greet')
-def get(greeting_input):
+@dataclasses.dataclass
+class GreetingV3:
     """
-    Get a named greeting
-    Returns:
-        A named greeting in JSON
-    ---
-    It is possible to place logic here like we do for safe_name, but if we parse
-    the GreetingV2Input via MarshMallow then we can also set a 'default' or 'missing' there.
+    A dataclass containing the v3 greeting
     """
-    safe_name: str = greeting_input['name'] or 'World'
-    return greeting_v2_output.dump({'message': f'Hello {safe_name}'}), 200
+    message: str
+
+
+class GreetingV3OutputSchema(ma.Schema):
+    """
+    The GreetingV3 OutputSchema
+    """
+    class Meta:
+        fields = ('message',)
+
+    message = fields.Str(
+        required=True,
+        metadata={
+            'description': 'The message returned'
+        }
+    )
+
+
+greeting_v3_output_schema = GreetingV3OutputSchema()

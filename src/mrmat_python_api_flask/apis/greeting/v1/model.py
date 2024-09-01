@@ -20,29 +20,39 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""
-Blueprint for the Greeting API in V3
-"""
+"""Greeting API v1 Model"""
 
-from flask import g
-from flask_smorest import Blueprint
+import dataclasses
+from marshmallow import fields, post_load
 
-from mrmat_python_api_flask import oidc
-from .model import greeting_v3_output, GreetingV3Output
-
-bp = Blueprint('greeting_v3', __name__, description='Greeting V3 API')
+from mrmat_python_api_flask import ma
 
 
-@bp.route('/', methods=['GET'])
-@bp.response(200, schema=GreetingV3Output)
-@bp.doc(summary='Get a greeting for the authenticated name',
-        description='This version of the greeting API knows who you are',
-        security=[{'openId': ['profile']}])
-@oidc.accept_token(require_token=True)
-def get():
+@dataclasses.dataclass
+class GreetingV1:
     """
-    Get a named greeting for the authenticated user
-    Returns:
-        A named greeting in JSON
+    A dataclass containing the v1 greeting
     """
-    return greeting_v3_output.dump(dict(message=f'Hello {g.oidc_token_info["username"]}')), 200
+    message: str
+
+
+class GreetingV1OutputSchema(ma.Schema):
+    """
+    The GreetingV1 Output Schema
+    """
+    class Meta:
+        fields = ('message',)
+
+    message = fields.Str(
+        required=True,
+        metadata={
+            'description': 'A greeting message'
+        }
+    )
+
+    @post_load
+    def make_greeting_v1(self, data, **kwargs):
+        return GreetingV1(**data)
+
+
+greeting_v1_output_schema = GreetingV1OutputSchema()

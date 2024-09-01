@@ -30,7 +30,7 @@ from flask import request, g, current_app
 from flask_smorest import Blueprint
 from marshmallow import ValidationError
 
-from mrmat_python_api_flask import db, oidc
+from mrmat_python_api_flask import db
 from mrmat_python_api_flask.apis import status
 from .model import Owner, Resource, ResourceSchema, resource_schema, resources_schema
 
@@ -48,7 +48,6 @@ def _extract_identity() -> Tuple:
         description='Returns all currently known resources and their metadata',
         security=[{'openId': ['mpaf-read']}])
 @bp.response(200, schema=ResourceSchema(many=True))
-@oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_all():
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {client_id} for {name}')
@@ -61,7 +60,6 @@ def get_all():
         description='Return a single resource identified by its resource id',
         security=[{'openId': ['mpaf-read']}])
 @bp.response(200, schema=ResourceSchema)
-@oidc.accept_token(require_token=True, scopes_required=['mpaf-read'])
 def get_one(i: int):
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {client_id} for {name}')
@@ -80,7 +78,6 @@ def get_one(i: int):
               required=True,
               description='The resource to create')
 @bp.response(200, schema=ResourceSchema)
-@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def create():
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {client_id} for {name}')
@@ -117,7 +114,6 @@ def create():
 
 
 @bp.route('/<i>', methods=['PUT'])
-@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def modify(i: int):
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {client_id} for {name}')
@@ -136,7 +132,6 @@ def modify(i: int):
 
 
 @bp.route('/<i>', methods=['DELETE'])
-@oidc.accept_token(require_token=True, scopes_required=['mpaf-write'])
 def remove(i: int):
     (client_id, name) = _extract_identity()
     logger.info(f'Called by {client_id} for {name}')
