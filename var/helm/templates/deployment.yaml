@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mpaflask
+  labels:
+    app.kubernetes.io/name: mpaflask
+    {{ include "common.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.pod.replicas | int }}
+  selector:
+    matchLabels:
+      {{ include "common.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{ include "common.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/scheme: http
+        prometheus.io/port: "8000"
+        prometheus.io/path: /metrics
+    spec:
+      serviceAccountName: {{ .Values.sa.name }}
+      volumes:
+      - name: config-volume
+        secret:
+          secretName: config-mpaflask
+      - name: data-volume
+        emptyDir:
+          sizeLimit: 10Mi
+          medium: Memory
+      - name: tmp-volume
+        emptyDir:
+          sizeLimit: 1Mi
+      - name: var-volume
+        emptyDir:
+          sizeLimit: 1Mi
+      containers:
+        - name: mpaflask
+          image: {{ .Values.pod.repository }}:{{ .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.pod.imagePullPolicy }}
+          env:
+          - name: APP_CONFIG
+            value: /config/app_config.json
+          - name: OTEL_SERVICE_NAME
+            value: "mrmat-python-api-flask"
+          - name: OTEL_TRACES_EXPORTER
+            value: "otlp"
+          - name: OTEL_METRICS_EXPORTER
+            value: "none"
+          - name: OTEL_LOGS_EXPORTER
+            value: "none"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: "jaeger-collector.stack.svc.cluster.local:4317"
+          - name: OTEL_EXPORTER_OTLP_INSECURE
+            value: "true"
+          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+            value: "jaeger-collector.stack.svc.cluster.local:4317"
+          - name: OTEL_EXPORTER_OTLP_TRACES_INSECURE
+            value: "true"
+          ports:
+          - name: http
+            containerPort: {{ .Values.pod.port }}
+            protocol: TCP
+          volumeMounts:
+          - name: config-volume
+            mountPath: /config
+            readOnly: true
+          - name: data-volume
+            mountPath: /data
+          - name: tmp-volume
+            mountPath: /tmp
+          - name: var-volume
+            mountPath: /home/app/.local/var
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          livenessProbe:
+            periodSeconds: 10
+            httpGet:
+              path: /api/healthz/liveness/
+              port: {{ .Values.pod.port }}
+              scheme: HTTP
+          readinessProbe:
+            periodSeconds: 10
+            httpGet:
+              path: /api/healthz/readiness/
+              port: {{ .Values.pod.port }}
+              scheme: HTTP
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - {{ .Values.pod.name }}

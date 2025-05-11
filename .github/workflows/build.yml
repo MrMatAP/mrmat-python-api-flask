@@ -9,7 +9,7 @@ name: Build
 env:
   MAJOR: 0
   MINOR: 0
-  PYTHON_VERSION: 3.11.0
+  PYTHON_VERSION: 3.13.0
 
 #
 # Establish when the workflow is run
@@ -39,12 +39,12 @@ jobs:
     steps:
 
     - name: Checkout out our code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Calculate Build Context
       run: |
         MRMAT_VERSION="${MAJOR}.${MINOR}.${GITHUB_RUN_NUMBER}"
-        if [ "$GITHUB_EVENT_NAME" == 'pull_request_target' -a "$GITHUB_BASE_REF" == 'main' ]; then
+        if [ "$GITHUB_EVENT_NAME" == 'pull_request_target' && GITHUB_BASE_REF == 'main']; then
           MRMAT_IS_RELEASE=true
           echo "::warning ::Building release ${MRMAT_VERSION}"
           echo "MRMAT_IS_RELEASE=true" >> $GITHUB_ENV
@@ -60,7 +60,7 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
 
     - name: Establish a cache for dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.local
@@ -69,16 +69,17 @@ jobs:
 
     - name: Build
       run: |
-        pip install --user -r requirements.txt
-        pylint ${GITHUB_WORKSPACE}/src/python/mrmat_python_api_flask
-        PYTHONPATH=${GITHUB_WORKSPACE}/src/python python -m pytest
-        python -m build --wheel -n  
+        export PYTHONUSERBASE=${HOME}/.local
+        pip install --user -r requirements.txt -r requirements.dev.txt
+        PYTHONPATH=${GITHUB_WORKSPACE}/src pytest
+        PYTHONPATH=${GITHUB_WORKSPACE}/src python -m build --wheel -n
 
     - name: Upload test results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: Test and Coverage
+
         path: |
           build/junit.xml
           build/coverage.xml

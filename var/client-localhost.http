@@ -1,0 +1,30 @@
+### Healthz
+GET http://localhost:5000/api/healthz
+
+### Liveness
+GET http://localhost:5000/api/healthz/liveness
+
+### Readiness
+GET http://localhost:5000/api/healthz/readiness
+
+### Greeting V1 API
+GET http://localhost:5000/api/greeting/v1
+
+### Greeting V2 API
+GET http://localhost:5000/api/greeting/v2
+
+### Greeting V2 API with custom name
+GET http://localhost:5000/api/greeting/v2?name=MrMat
+
+### Platform API V1 - Create an Owner
+POST http://localhost:5000/api/platform/v1/owner
+Content-Type: application/json
+
+{
+  "name": "MrMat"
+}
+
+### Platform API V1 - Get owners
+GET http://localhost:5000/api/platform/v1/owner
+
+

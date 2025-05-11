@@ -27,16 +27,11 @@ from marshmallow import fields, post_load
 
 from mrmat_python_api_flask import ma
 
-
 @dataclasses.dataclass
 class GreetingV1:
-    """
-    A dataclass containing the v1 greeting
-    """
-    message: str
+    message: str = dataclasses.field(default='Hello World')
 
-
-class GreetingV1OutputSchema(ma.Schema):
+class GreetingV1Schema(ma.Schema):
     """
     The GreetingV1 Output Schema
     """
@@ -45,14 +40,15 @@ class GreetingV1OutputSchema(ma.Schema):
 
     message = fields.Str(
         required=True,
-        metadata={
-            'description': 'A greeting message'
+        dump_default='Hello World',
+        metadata = {
+            'description': 'A generic greeting message'
         }
     )
 
     @post_load
-    def make_greeting_v1(self, data, **kwargs):
+    def as_object(self, data, **kwargs) -> GreetingV1:
         return GreetingV1(**data)
 
 
-greeting_v1_output_schema = GreetingV1OutputSchema()
+greeting_v1_schema = GreetingV1Schema()

@@ -23,5 +23,5 @@
 """Pluggable blueprint of the Greeting API v1
 """
 
-from .model import GreetingV1, GreetingV1OutputSchema, greeting_v1_output_schema          # noqa: F401
-from .api import bp as api_greeting_v1                                             # noqa: F401
+from .model import GreetingV1, GreetingV1Schema, greeting_v1_schema
+from .api import bp as api_greeting_v1

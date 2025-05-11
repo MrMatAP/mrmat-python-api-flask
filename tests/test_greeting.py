@@ -20,30 +20,32 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import pytest
 import flask.testing
-from mrmat_python_api_flask.apis.healthz.api import (
-    Healthz, healthz_schema,
-    Liveness, liveness_schema,
-    Readiness, readiness_schema,
+
+from mrmat_python_api_flask.apis.greeting.v1 import GreetingV1, greeting_v1_schema
+from mrmat_python_api_flask.apis.greeting.v2 import (
+    GreetingV2, greeting_v2_schema,
 )
 
-def test_healthz(client: flask.testing.Client):
-    response = client.get("/api/healthz/")
+def test_greeting_v1(client: flask.testing.Client):
+    response = client.get("/api/greeting/v1/")
     assert response.status_code == 200
-    healthz = healthz_schema.load(data=response.json)
-    assert isinstance(healthz, Healthz)
-    assert healthz.status == 'OK'
+    greeting = greeting_v1_schema.load(response.json)
+    assert isinstance(greeting, GreetingV1)
+    assert greeting.message == 'Hello World'
 
-def test_liveness(client: flask.testing.Client):
-    response = client.get("/api/healthz/liveness")
+def test_greeting_v2(client: flask.testing.Client):
+    response = client.get("/api/greeting/v2/")
     assert response.status_code == 200
-    liveness = liveness_schema.load(data=response.json)
-    assert isinstance(liveness, Liveness)
-    assert liveness.status == 'OK'
+    greeting = greeting_v2_schema.load(response.json)
+    assert isinstance(greeting, GreetingV2)
+    assert greeting.message == 'Hello Stranger'
 
-def test_readiness(client: flask.testing.Client):
-    response = client.get("/api/healthz/readiness")
+@pytest.mark.parametrize('name', ['MrMat', 'Chris', 'Michal', 'Alexandre', 'Jerome'])
+def test_greeting_v2_custom(client: flask.testing.Client, name: str):
+    response = client.get("/api/greeting/v2/", query_string={'name': name})
     assert response.status_code == 200
-    readiness = readiness_schema.load(data=response.json)
-    assert isinstance(readiness, Readiness)
-    assert readiness.status == 'OK'
+    greeting = greeting_v2_schema.load(response.json)
+    assert isinstance(greeting, GreetingV2)
+    assert greeting.message == f'Hello {name}'
