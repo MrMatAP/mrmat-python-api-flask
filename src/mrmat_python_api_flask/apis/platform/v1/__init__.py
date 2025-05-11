@@ -20,12 +20,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Pluggable blueprint of the Health API
+"""Pluggable blueprint of the Resource API v1
 """
 
+from .api import bp as api_platform_v1
 from .model import (
-    Healthz, HealthzSchema, healthz_schema,
-    Liveness, LivenessSchema, liveness_schema,
-    Readiness, ReadinessSchema, readiness_schema
+    OwnerInput, OwnerInputSchema, owner_input_schema,
+    OwnerSchema, owner_schema, owners_schema,
+    ResourceInput, ResourceInputSchema, resource_input_schema,
+    ResourceSchema, resource_schema, resources_schema, Owner, Resource
 )
-from .api import bp as api_healthz

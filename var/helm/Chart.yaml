@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mrmat-python-api-flask
+description: A Helm chart for MrMat Python API Flask
+type: application
+version: "0.0.0"
+appVersion: "0.0.0.dev0"

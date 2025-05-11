@@ -25,7 +25,10 @@ Blueprint for the Greeting API in V2
 """
 
 from flask_smorest import Blueprint
-from .model import GreetingV2InputSchema, GreetingV2Output, greeting_v2_output_schema, GreetingV2OutputSchema
+from .model import (
+    GreetingV2Input, GreetingV2InputSchema, greeting_v2_input_schema,
+    GreetingV2, GreetingV2Schema, greeting_v2_schema
+)
 
 bp = Blueprint('greeting_v2', __name__, description='Greeting V2 API')
 
@@ -35,17 +38,14 @@ bp = Blueprint('greeting_v2', __name__, description='Greeting V2 API')
               description='The name to greet',
               location='query',
               required=False)
-@bp.response(200, GreetingV2OutputSchema)
+@bp.response(200, GreetingV2Schema)
 @bp.doc(summary='Get a greeting for a given name',
         description='This version of the greeting API allows you to specify who to greet')
-def get(greeting_input):
+def get(greeting_input: GreetingV2Input) -> GreetingV2Schema:
     """
     Get a named greeting
     Returns:
         A named greeting in JSON
-    ---
-    It is possible to place logic here like we do for safe_name, but if we parse
-    the GreetingV2Input via MarshMallow then we can also set a 'default' or 'missing' there.
     """
-    safe_name: str = greeting_input['name'] or 'World'
-    return greeting_v2_output_schema.dump(GreetingV2Output(message=f'Hello {safe_name}'))
+    safe_name: str = greeting_input.name or 'Stranger'
+    return greeting_v2_schema.dump(obj=GreetingV2(message=f'Hello {safe_name}'))
