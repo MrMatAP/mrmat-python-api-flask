@@ -25,19 +25,20 @@ Blueprint for the Greeting API in V1
 """
 
 from flask_smorest import Blueprint
-from mrmat_python_api_flask.apis.greeting.v1.model import GreetingV1, GreetingV1OutputSchema, greeting_v1_output_schema
+from .model import GreetingV1, GreetingV1Schema, greeting_v1_schema
 
-bp = Blueprint('greeting_v1', __name__, description='Greeting V1 API')
+bp = Blueprint('greeting_v1',
+               __name__,
+               url_prefix='/',
+               description='Greeting V1 API')
 
 
 @bp.route('/', methods=['GET'])
-@bp.response(200, GreetingV1OutputSchema)
+@bp.response(200, GreetingV1Schema)
 @bp.doc(summary='Get an anonymous greeting',
         description='This version of the greeting API does not have a means to determine who you are')
 def get_greeting():
     """
     Receive a Hello World message
-    Returns:
-        A plain-text hello world message
     """
-    return greeting_v1_output_schema.dump(GreetingV1(message='Hello World')), 200
+    return greeting_v1_schema.dump(obj=GreetingV1(message='Hello World'))

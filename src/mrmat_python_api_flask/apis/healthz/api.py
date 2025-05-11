@@ -26,19 +26,48 @@ Blueprint for the Healthz API
 
 from flask_smorest import Blueprint
 
-from mrmat_python_api_flask.apis import status, StatusOutputSchema
+from .model import (
+    Healthz, HealthzSchema, healthz_schema,
+    Liveness, LivenessSchema, liveness_schema,
+    Readiness, ReadinessSchema, readiness_schema
+)
 
 bp = Blueprint('healthz', __name__, description='Health API')
 
 
 @bp.route('/', methods=['GET'])
-@bp.response(200, StatusOutputSchema)
-@bp.doc(summary='Get an indication of application health',
+@bp.response(200, HealthzSchema)
+@bp.doc(summary='Get an indication of overall application health',
         description='Assess application health')
-def get():
+def healthz() -> HealthzSchema:
     """
     Respond with the app health status
     Returns:
         A status response
     """
-    return status(code=200, message='OK'), 200
+    return healthz_schema.dump(Healthz(status='OK'))
+
+
+@bp.route('/liveness', methods=['GET'])
+@bp.response(200, LivenessSchema)
+@bp.doc(summary='Get an indication of application liveness',
+        description='Assess application liveness')
+def liveness() -> LivenessSchema:
+    """
+    Respond with the app health status
+    Returns:
+        A status response
+    """
+    return liveness_schema.dump(Liveness(status='OK'))
+
+@bp.route('/readiness', methods=['GET'])
+@bp.response(200, ReadinessSchema)
+@bp.doc(summary='Get an indication of application readiness',
+        description='Assess application liveness')
+def readiness() -> ReadinessSchema:
+    """
+    Respond with the app health status
+    Returns:
+        A status response
+    """
+    return readiness_schema.dump(Readiness(status='OK'))

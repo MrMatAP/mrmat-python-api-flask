@@ -24,8 +24,6 @@
 """
 
 from .model import (
-    GreetingV2Output,
-    GreetingV2InputSchema,
-    GreetingV2OutputSchema,
-    greeting_v2_output_schema)  # noqa: F401
+    GreetingV2Input, GreetingV2InputSchema, greeting_v2_input_schema,
+    GreetingV2, GreetingV2Schema, greeting_v2_schema)
 from .api import bp as api_greeting_v2                                                                      # noqa: F401

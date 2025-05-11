@@ -1,0 +1,30 @@
+#
+# Default values for MrMat :: Python API Flask
+
+sa:
+  name: sa-mpaflask
+
+pod:
+  name: mpaflask
+  replicas: 1
+  repository: registry:5000/mrmat-python-api-flask
+  imagePullPolicy: Always
+  port: 8000
+
+svc:
+  name: svc-mpaflask
+  port: 80
+
+route:
+  enabled: true
+  name: route-mpaflask
+  hostnames:
+  - mpaflask.covenant.local
+  parents:
+  - name: edge-ingress
+    namespace: edge
+
+config:
+  db_url: "sqlite:///"
+  #db_url: "sqlite:///data/db.sqlite"
+

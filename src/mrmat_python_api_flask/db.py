@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2021 MrMat
+#  Copyright (c) 2022 Mathieu Imfeld
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,21 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Pluggable blueprint of the Health API
-"""
+from functools import lru_cache
 
-from .model import (
-    Healthz, HealthzSchema, healthz_schema,
-    Liveness, LivenessSchema, liveness_schema,
-    Readiness, ReadinessSchema, readiness_schema
-)
-from .api import bp as api_healthz
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from mrmat_python_api_flask import app_config, ORMBase
+
+
+@lru_cache
+def get_db() -> Session:
+    if app_config.db_url.startswith('sqlite'):
+        engine = create_engine(url=app_config.db_url, connect_args={'check_same_thread': False})
+    else:
+        engine = create_engine(url=app_config.db_url)
+    session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    with session_local():
+        ORMBase.metadata.create_all(bind=engine)
+    return session_local()
