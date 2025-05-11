@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2021 MrMat
+#  Copyright (c) 2025 MrMat
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -20,59 +20,56 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Greeting API v2 Model"""
-
 import dataclasses
 from marshmallow import fields, post_load
 
 from mrmat_python_api_flask import ma
 
 @dataclasses.dataclass
-class GreetingV2Input:
-    name: str = dataclasses.field(default='Stranger')
+class Healthz:
+    status: str = dataclasses.field(default='Unknown')
 
-class GreetingV2InputSchema(ma.Schema):
-    """
-    The GreetingV2 Input Schema
-    """
-    class Meta:
-        fields: ('name',)
-
-    name = fields.Str(
-        required=False,
-        load_only=True,
-        load_default='Stranger',
-        metadata={
-            'description': 'The optional name to greet'
-        }
-    )
-
-    @post_load
-    def as_object(self, data, **kwargs) -> GreetingV2Input:
-        return GreetingV2Input(**data)
-
-@dataclasses.dataclass
-class GreetingV2:
-    message: str = dataclasses.field(default='Hello Stranger')
-
-class GreetingV2Schema(ma.Schema):
-    """
-    The GreetingV2 Output Schema
-    """
-    class Meta:
-        fields = ('message',)
-
-    message = fields.Str(
+class HealthzSchema(ma.Schema):
+    status = fields.Str(
         required=True,
         metadata={
-            'description': 'A customizable greeting message'
-        }
-    )
+            'description': 'The overall health of the service'
+        })
 
     @post_load
-    def as_object(self, data, **kwargs) -> GreetingV2:
-        return GreetingV2(**data)
+    def as_object(self, data, **kwargs) -> Healthz:
+        return Healthz(**data)
 
+@dataclasses.dataclass
+class Liveness:
+    status: str = dataclasses.field(default='Unknown')
 
-greeting_v2_input_schema = GreetingV2InputSchema()
-greeting_v2_schema = GreetingV2Schema()
+class LivenessSchema(ma.Schema):
+    status = fields.Str(
+        required=True,
+        metadata={
+            'description': 'The liveness of the service'
+        })
+
+    @post_load
+    def as_object(self, data, **kwargs) -> Liveness:
+        return Liveness(**data)
+
+@dataclasses.dataclass
+class Readiness:
+    status: str = dataclasses.field(default='Unknown')
+
+class ReadinessSchema(HealthzSchema):
+    status = fields.Str(
+        required=True,
+        metadata={
+            'description': 'The readiness of the service'
+        })
+
+    @post_load
+    def as_object(self, data, **kwargs) -> Readiness:
+        return Readiness(**data)
+
+healthz_schema = HealthzSchema()
+liveness_schema = LivenessSchema()
+readiness_schema = ReadinessSchema()

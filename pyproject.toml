@@ -1,20 +1,15 @@
 [build-system]
 requires = [
-    'setuptools>=42.0.0',
-    'wheel >= 0.36.0',
-    'pylint~=2.15.5',           # MIT
-    'pytest~=7.2.0',            # GPL-2.0-or-later
-    'pytest-cov~=4.0.0',        # MIT
-    'pyjwt~=2.6.0',             # MIT
-    'python-keycloak~=2.6.0'  # MIT
+    'setuptools==76.0.0',
+    'wheel==0.45.1'
 ]
 build-backend = 'setuptools.build_meta'
 
 [project]
 name = "mrmat-python-api-flask"
-description = "Boilerplate code for an API using Flask"
-urls = { "Sources" = "https://github.com/MrMatAP/mrmat-python-api-flask" }
-keywords = ["experimental"]
+description = "A Python API using Flask"
+urls = { "Sources" = "https://github.com/MrMatAP/mrmat-python-api-flask.git" }
+keywords = ["api", "python", "flask"]
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
@@ -26,24 +21,15 @@ maintainers = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.12"
 ]
-requires-python = ">=3.10"
-dependencies = [
-    "Flask~=2.2.3",                     # BSD 3-Clause
-    "Flask-SQLAlchemy~=3.0.3",          # BSD 3-Clause
-    "Flask-Migrate~=4.0.4",             # MIT
-    "flask-smorest~=0.40.0",            # MIT
-    "Flask-Marshmallow~=0.14.0",        # MIT
-    "marshmallow-sqlalchemy~=0.28.1",   # MIT
-    "psycopg2-binary~=2.9.5",           # LGPL with exceptions
-    "Flask-OIDC~=1.4.0",                # MIT
-    "itsdangerous<=2.0.1"               # BSD 3-Clause      Must affix so JSONWebSignatureSerializer is known
-]
-dynamic = ["version"]
+requires-python = ">=3.12"
+dynamic = ["version", "dependencies", "optional-dependencies"]
 
 [tool.setuptools.dynamic]
-version = { attr = "ci.version "}
+version = { attr = "ci.version"}
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies = { dev = {file = ["requirements.dev.txt"] } }
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -51,19 +37,13 @@ include = ["mrmat_python_api_flask*"]
 namespaces = true
 
 [tool.setuptools.package-data]
-"*" = ["*.mo", "migrations/*", "templates/*", "static/*"]
+"*" = [".mo", "*.yml", "*.yaml", "*.md", "inventory", "*.j2", "*.html", "*.ico", "*.css", "*.js", "*.svg", "*.woff", "*.eot", "*.ttf"]
 
-[project.scripts]
-mrmat-python-api-flask-client = "mrmat_python_api_flask.client:main"
-
-# If you are debugging your tests using PyCharm then comment out the coverage options
-# in addopts
 [tool.pytest.ini_options]
-minversion = "6.0"
-#addopts = "--cov=mrmat_python_api_flask --cov-report=term --cov-report=xml:build/coverage.xml --junit-xml=build/junit.xml"
-testpaths = ["tests"]
-junit_family = "xunit2"
+testpaths = 'tests'
+addopts = '--cov=mrmat_python_api_flask --cov-report=term --cov-report=xml:build/coverage.xml --junit-xml=build/junit.xml'
+junit_family = 'xunit2'
 log_cli = 1
-log_cli_level = "INFO"
-log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
-log_cli_date_format="%Y-%m-%d %H:%M:%S"
+log_cli_level = 'INFO'
+log_cli_format = '%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)'
+log_cli_date_format = '%Y-%m-%d %H:%M:%S'
