@@ -3,7 +3,7 @@
 
 setuptools==76.0.0
 build==1.2.2.post1                  # MIT
-wheel==0.45.1                       # MIT
+wheel==0.46.2                       # MIT
 
 pytest==8.3.5                       # MIT
 pytest-cov==6.0.0                   # MIT
